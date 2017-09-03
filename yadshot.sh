@@ -103,6 +103,7 @@ buttonpressedfunc () {
             capturefunc
             ;;
         0)
+            sleep 1
             rm -f /tmp/"$SS_NAME"
             SS_NAME="yadshot$(date +'%m-%d-%y-%l%M%p').png"
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
