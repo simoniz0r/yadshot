@@ -44,8 +44,20 @@ upload () {
 
 capturefunc () {
     $MAIM
+    WSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" ")
+    HSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" ")
+    WSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f4 -d" ")
+    HSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f4 -d" ")
+    if [ $WSCREEN_RES -le $WSIZE ] || [ $HSCREEN_RES -le $HSIZE ]; then
+        mv /tmp/"$SS_NAME" /tmp/"$SS_NAME"_ORIGINAL
+        convert -resize 50% /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
+    fi
     OUTPUT="$(yad --undecorated --center --form --image="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" --columns="2" --field="Capture selection":CHK "$SELECTION" --field="Do not capture decorations":CHK "$DECORATIONS" --button="Close"\!gtk-close:1 --button="Copy to clipboard"\!gtk-paste:2 --button="Upload to imgur"\!gtk-go-up:3 --button=gtk-save:4 --button="New Screenshot"\!gtk-new:0)"
     BUTTON_PRESSED="$?"
+    if [ -f /tmp/"$SS_NAME"_ORIGINAL ]; then
+        rm -f /tmp/"$SS_NAME"
+        mv /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
+    fi
     buttonpressedfunc
 }
 
