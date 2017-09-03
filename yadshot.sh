@@ -86,7 +86,7 @@ buttonpressedfunc () {
             esac
             ;;
         4)
-            SAVE_DIR=$(yad --undecorated --center --file --directory --save --title="yadshot" --width=800 --height=600 --text="Save $SS_NAME as...")
+            SAVE_DIR=$(yad --undecorated --center --file --save --confirm-overwrite --title="yadshot" --width=800 --height=600 --text="Save $SS_NAME as...")
             cp /tmp/"$SS_NAME" "$SAVE_DIR"
             capturefunc
             ;;
