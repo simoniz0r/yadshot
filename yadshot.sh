@@ -21,13 +21,13 @@ fi
 . ~/.config/yadshot/yadshot.conf
 
 if [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "TRUE" ]; then
-    MAIM="$(maim -l -c 0,119,255,0.34 -n --format png  /tmp/"$SS_NAME")"
+    MAIM="$(maim -l -u -c 0,119,255,0.34 -n --format png  /tmp/"$SS_NAME")"
 elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "TRUE" ]; then
-    MAIM="$(maim -l -c 0,119,255,0.34 -sn --format png /tmp/"$SS_NAME")"
+    MAIM="$(maim -l -u -c 0,119,255,0.34 -sn --format png /tmp/"$SS_NAME")"
 elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ]; then
-    MAIM="$(maim -l -c 0,119,255,0.34 -s --format png /tmp/"$SS_NAME")"
+    MAIM="$(maim -l -u -c 0,119,255,0.34 -s --format png /tmp/"$SS_NAME")"
 elif [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "FALSE" ]; then
-    MAIM="$(maim -l -c 0,119,255,0.34 --format png  /tmp/"$SS_NAME")"
+    MAIM="$(maim -l -u -c 0,119,255,0.34 --format png  /tmp/"$SS_NAME")"
 fi
 
 savesettingsfunc () {
