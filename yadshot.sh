@@ -76,7 +76,7 @@ buttonpressedfunc () {
             upload "@$HOME/Pictures/"$SS_NAME""
             case $CURL_STATUS in
                 0)
-                    url="$(cat /tmp/yadshot-upload-status | tr '<' '\n' | grep 'http://' | cut -f2 -d">")"
+                    url="$(cat /tmp/yadshot-upload-status | tr '<' '\n' | grep 'http' | cut -f2 -d">")"
                     delete_hash="$(cat /tmp/yadshot-upload-status | tr '<' '\n' | grep 'deletehash' | cut -f2 -d">")"
                     url="$(echo $url | sed 's/^http:/https:/')"
                     echo "Screenshot uploaded to imgr!" > /tmp/yadshot-upload-output
