@@ -80,7 +80,7 @@ case $@ in
         $YADSHOT
         ;;
     -t*|--t*)
-        nohup $TRAY &
+        $TRAY
         ;;
     *)
         startfunc
