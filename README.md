@@ -8,8 +8,6 @@ yadshot -c : Uses yad to provide a GUI front end for maim/slop.  Images can be c
 
 yadshot -p : Upload a paste from your clipboard to teknik.io.  Requires xclip and curl.
 
-yadshot -s : Upload a paste from your selection clipboard to teknik.io.  Requires xclip and curl.
-
 yadshot -t : Opens a system tray app that gives options between uploading a file/image, paste, or taking a screenshot.
 
 Dependencies: maim, slop, yad, xclip, curl, coreutils
