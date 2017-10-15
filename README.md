@@ -10,7 +10,7 @@ yadshot -p : Upload a paste from your clipboard to teknik.io.
 
 yadshot -t : Opens a system tray app that gives options between uploading a file/image, paste, or taking a screenshot.
 
-Dependencies: maim, slop, yad, xclip, curl, coreutils
+Dependencies: maim, slop, yad, xclip, curl, coreutils, imagemagick
 
 ![yadshot](/Screenshot.png)
 
