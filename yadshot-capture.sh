@@ -38,20 +38,24 @@ upload () {
 capturefunc () {
     . ~/.config/yadshot/yadshot.conf
     if [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "TRUE" ] && [ "$CURSOR" = "FALSE" ]; then
+        sleep 1
         maim -qluc 0,119,255,0.34 -d "$SS_DELAY" --format png  /tmp/"$SS_NAME"
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "TRUE" ] && [ "$CURSOR" = "FALSE" ]; then
         maim -qsluc 0,119,255,0.34 -d "$SS_DELAY" --format png /tmp/"$SS_NAME"
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ] && [ "$CURSOR" = "FALSE" ]; then
         maim -qslunc 0,119,255,0.34 -d "$SS_DELAY" --format png /tmp/"$SS_NAME"
     elif [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "FALSE" ] && [ "$CURSOR" = "FALSE" ]; then
+        sleep 1
         maim -qlunc 0,119,255,0.34 -d "$SS_DELAY" --format png  /tmp/"$SS_NAME"
     elif [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "TRUE" ] && [ "$CURSOR" = "TRUE" ]; then
+        sleep 1
         maim -qlc 0,119,255,0.34 -d "$SS_DELAY" --format png  /tmp/"$SS_NAME"
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "TRUE" ] && [ "$CURSOR" = "TRUE" ]; then
         maim -qslc 0,119,255,0.34 -d "$SS_DELAY" --format png /tmp/"$SS_NAME"
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ] && [ "$CURSOR" = "TRUE" ]; then
         maim -qslnc 0,119,255,0.34 -d "$SS_DELAY" --format png /tmp/"$SS_NAME"
     elif [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "FALSE" ] && [ "$CURSOR" = "TRUE" ]; then
+        sleep 1
         maim -qlnc 0,119,255,0.34 -d "$SS_DELAY" --format png  /tmp/"$SS_NAME"
     fi
 }
