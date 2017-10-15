@@ -64,7 +64,7 @@ displayssfunc () {
     . ~/.config/yadshot/yadshot.conf
     WSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" ")
     HSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" ")
-    WSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f4 -d" ")
+    WSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f2 -d" ")
     HSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f4 -d" ")
     if [ $WSCREEN_RES -le $WSIZE ] || [ $HSCREEN_RES -le $HSIZE ]; then
         mv /tmp/"$SS_NAME" /tmp/"$SS_NAME"_ORIGINAL
