@@ -10,28 +10,24 @@ RUNNING_DIR="$(dirname $(readlink -f $0))"
 SS_NAME="yadshot$(date +'%m-%d-%y-%H%M%S').png"
 SELECTION="TRUE"
 DECORATIONS="TRUE"
+CURSOR="FALSE"
+SS_DELAY=0
 
 if [ ! -d ~/.config/yadshot ]; then
     mkdir ~/.config/yadshot
     echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
     echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
+    echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
+    echo "CURSOR="\"$CURSOR\""" >> ~/.config/yadshot/yadshot.conf
 fi
 
 . ~/.config/yadshot/yadshot.conf
 
-if [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "TRUE" ]; then
-    MAIM="$(maim -l -u -c 0,119,255,0.34 -n --format png  /tmp/"$SS_NAME")"
-elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "TRUE" ]; then
-    MAIM="$(maim -l -u -c 0,119,255,0.34 -sn --format png /tmp/"$SS_NAME")"
-elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ]; then
-    MAIM="$(maim -l -u -c 0,119,255,0.34 -s --format png /tmp/"$SS_NAME")"
-elif [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "FALSE" ]; then
-    MAIM="$(maim -l -u -c 0,119,255,0.34 --format png  /tmp/"$SS_NAME")"
-fi
-
 savesettingsfunc () {
     echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
     echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
+    echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
+    echo "CURSOR="\"$CURSOR\""" >> ~/.config/yadshot/yadshot.conf
 }
 
 upload () {
@@ -40,7 +36,28 @@ upload () {
 }
 
 capturefunc () {
-    $MAIM
+    . ~/.config/yadshot/yadshot.conf
+    if [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "TRUE" ] && [ "$CURSOR" = "FALSE" ]; then
+        maim -qluc 0,119,255,0.34 -d "$SS_DELAY" --format png  /tmp/"$SS_NAME"
+    elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "TRUE" ] && [ "$CURSOR" = "FALSE" ]; then
+        maim -qsluc 0,119,255,0.34 -d "$SS_DELAY" --format png /tmp/"$SS_NAME"
+    elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ] && [ "$CURSOR" = "FALSE" ]; then
+        maim -qslunc 0,119,255,0.34 -d "$SS_DELAY" --format png /tmp/"$SS_NAME"
+    elif [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "FALSE" ] && [ "$CURSOR" = "FALSE" ]; then
+        maim -qlunc 0,119,255,0.34 -d "$SS_DELAY" --format png  /tmp/"$SS_NAME"
+    elif [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "TRUE" ] && [ "$CURSOR" = "TRUE" ]; then
+        maim -qlc 0,119,255,0.34 -d "$SS_DELAY" --format png  /tmp/"$SS_NAME"
+    elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "TRUE" ] && [ "$CURSOR" = "TRUE" ]; then
+        maim -qslc 0,119,255,0.34 -d "$SS_DELAY" --format png /tmp/"$SS_NAME"
+    elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ] && [ "$CURSOR" = "TRUE" ]; then
+        maim -qslnc 0,119,255,0.34 -d "$SS_DELAY" --format png /tmp/"$SS_NAME"
+    elif [ "$SELECTION" = "FALSE" ] && [ "$DECORATIONS" = "FALSE" ] && [ "$CURSOR" = "TRUE" ]; then
+        maim -qlnc 0,119,255,0.34 -d "$SS_DELAY" --format png  /tmp/"$SS_NAME"
+    fi
+}
+
+displayssfunc () {
+    . ~/.config/yadshot/yadshot.conf
     WSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" ")
     HSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" ")
     WSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f4 -d" ")
@@ -49,7 +66,7 @@ capturefunc () {
         mv /tmp/"$SS_NAME" /tmp/"$SS_NAME"_ORIGINAL
         convert -resize 50% /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
     fi
-    OUTPUT="$(yad --center --form --image="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" --columns="2" --field="Capture selection":CHK "$SELECTION" --field="Do not capture decorations":CHK "$DECORATIONS" --button="Close"\!gtk-close:1 --button="Copy to clipboard"\!gtk-paste:2 --button="Upload to teknik"\!gtk-go-up:3 --button=gtk-save:4 --button="New Screenshot"\!gtk-new:0)"
+    OUTPUT="$(yad --center --form --image="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Capture cursor":CHK "$CURSOR" --field="Delay before capture":NUM "$SS_DELAY!0..120" --button="Close"\!gtk-close:1 --button="Copy to clipboard"\!gtk-paste:2 --button="Upload to teknik"\!gtk-go-up:3 --button=gtk-save:4 --button="New Screenshot"\!gtk-new:0)"
     BUTTON_PRESSED="$?"
     if [ -f /tmp/"$SS_NAME"_ORIGINAL ]; then
         rm -f /tmp/"$SS_NAME"
@@ -66,7 +83,7 @@ buttonpressedfunc () {
             ;;
         2)
             xclip -selection clipboard -t image/png -i < /tmp/"$SS_NAME"
-            capturefunc
+            displayssfunc
             ;;
         3)
             cp /tmp/"$SS_NAME" $HOME/Pictures/"$SS_NAME"
@@ -74,25 +91,26 @@ buttonpressedfunc () {
             case $FAILED in
                 0)
                     rm -f "$HOME/Pictures/"$SS_NAME""
-                    capturefunc
+                    displayssfunc
                     ;;
                 1)
                     yad --center --error --title="yadshot" --text="$SS_NAME upload failed; screenshot stored in $HOME/Pictures/"$SS_NAME""
-                    capturefunc
+                    displayssfunc
                     ;;
             esac
             ;;
         4)
             SAVE_DIR=$(yad --center --file --save --confirm-overwrite --title="yadshot" --width=800 --height=600 --text="Save $SS_NAME as...")
             cp /tmp/"$SS_NAME" "$SAVE_DIR"
-            capturefunc
+            displayssfunc
             ;;
         0)
-            sleep 1
             rm -f /tmp/"$SS_NAME"
             SS_NAME="yadshot$(date +'%m-%d-%y-%l%M%p').png"
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
+            CURSOR="$(echo $OUTPUT | cut -f3 -d",")"
+            SS_DELAY="$(echo $OUTPUT | cut -f4 -d",")"
             savesettingsfunc
             exec "$YADSHOT"
             ;;
@@ -100,4 +118,5 @@ buttonpressedfunc () {
 }
 
 capturefunc
+displayssfunc
 buttonpressedfunc
