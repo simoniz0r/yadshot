@@ -42,6 +42,25 @@ function yadshot_capture() {
 }
 export -f yadshot_capture
 
+function upload_list() {
+    LIST_ITEM="$(yad --center --list --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
+    case $? in
+        2)
+            sleep 0
+            ;;
+        1)
+            yad --center --info --title="yadshot" --button=gtk-ok --text="~/.teknik has been removed!"
+            rm -f ~/.teknik
+            ;;
+        0)
+            echo "$LIST_ITEM" | xclip -selection primary
+            echo "$LIST_ITEM" | xclip -selection clipboard
+            yad --center --info --title="yadshot" --button=gtk-ok --text="$LIST_ITEM has been copied to clipboard."
+            ;;
+    esac
+}
+export -f upload_list
+
 # create the notification icon
 yad --notification                  \
     --listen                        \
@@ -49,5 +68,5 @@ yad --notification                  \
     --text="yadshot"   \
     --command="bash -c on_click"    \
     --item-separator=","            \
-    --menu="Upload file/image,bash -c teknik_file,gtk-go-up|Upload paste,bash -c teknik_paste,gtk-copy|New screenshot,bash -c yadshot_capture,gtk-new" <&3
+    --menu="Upload file/image,bash -c teknik_file,gtk-go-up|Upload paste,bash -c teknik_paste,gtk-copy|New screenshot,bash -c yadshot_capture,gtk-new|View upload list,bash -c upload_list,gtk-edit" <&3
     
