@@ -13,5 +13,3 @@ yadshot -t : Opens a system tray app that gives options between uploading a file
 Dependencies: maim, slop, yad, xclip, curl, coreutils, imagemagick
 
 ![yadshot](/Screenshot.png)
-
-![yadshot2](/Screenshot2.png)
