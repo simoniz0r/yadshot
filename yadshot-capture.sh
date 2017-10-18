@@ -62,8 +62,8 @@ capturefunc () {
 
 displayssfunc () {
     . ~/.config/yadshot/yadshot.conf
-    WSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" ")
-    HSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" ")
+    WSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" " | awk '{print $1 * .75}')
+    HSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" " | awk '{print $1 * .75}')
     WSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f2 -d" ")
     HSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f4 -d" ")
     if [ $WSCREEN_RES -le $WSIZE ] || [ $HSCREEN_RES -le $HSIZE ]; then
