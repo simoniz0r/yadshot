@@ -10,7 +10,6 @@ RUNNING_DIR="$(dirname $(readlink -f $0))"
 SS_NAME="yadshot$(date +'%m-%d-%y-%H%M%S').png"
 SELECTION="TRUE"
 DECORATIONS="TRUE"
-CURSOR="FALSE"
 SS_DELAY=0
 
 if [ ! -d ~/.config/yadshot ]; then
@@ -18,7 +17,6 @@ if [ ! -d ~/.config/yadshot ]; then
     echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
     echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
     echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
-    echo "CURSOR="\"$CURSOR\""" >> ~/.config/yadshot/yadshot.conf
 fi
 
 . ~/.config/yadshot/yadshot.conf
@@ -27,7 +25,6 @@ savesettingsfunc () {
     echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
     echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
     echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
-    echo "CURSOR="\"$CURSOR\""" >> ~/.config/yadshot/yadshot.conf
 }
 
 upload () {
@@ -62,10 +59,10 @@ capturefunc () {
 
 displayssfunc () {
     . ~/.config/yadshot/yadshot.conf
-    WSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" " | awk '{print $1 * .75}')
-    HSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" " | awk '{print $1 * .75}')
-    WSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f2 -d" ")
-    HSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f4 -d" ")
+    WSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" " | awk '{print $1 * .75}' | cut -f1 -d'.')
+    HSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" " | awk '{print $1 * .75}' | cut -f1 -d'.')
+    WSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f2 -d" " | cut -f1 -d'.')
+    HSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f4 -d" " | cut -f1 -d'.')
     if [ $WSCREEN_RES -le $WSIZE ] || [ $HSCREEN_RES -le $HSIZE ]; then
         mv /tmp/"$SS_NAME" /tmp/"$SS_NAME"_ORIGINAL
         convert -resize 50% /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
