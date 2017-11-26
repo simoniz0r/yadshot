@@ -1,6 +1,6 @@
 # yadshot
 
-yadshot provides a GUI frontend for taking screenshots using maim/slop and uploads files and pastes to [teknik.io](https://teknik.io) using [teknik.sh](https://git.teknik.io/Teknikode/Tools/src/master/Upload/teknik.sh).  yadshot provides the following options:
+yadshot can take screenshots using slop/imagemagick's import and upload screenshots, files, and pastes to [teknik.io](https://teknik.io) using [teknik.sh](https://git.teknik.io/Teknikode/Tools/src/master/Upload/teknik.sh).  yadshot provides the following options:
 
 yadshot : Opens a yad dialog with choices between uploading a file/image, a paste, or taking a screenshot.
 
