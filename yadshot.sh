@@ -1,9 +1,9 @@
 #!/bin/bash
 # Title: yadshot
 # Author: simoniz0r
-# Description: Uses yad --undecorated --center to provide a simple GUI for running maim/slop options
+# Description: Uses yad to provide a simple GUI for using slop to capture screenshots using Imagemagick's import
 # License: GPL v2 Only
-# Dependencies: coreutils, maim, slop, yad, xclip, curl
+# Dependencies: coreutils, slop, imagemagick, yad, xclip, curl
 
 RUNNING_DIR="$(dirname $(readlink -f $0))"
 
@@ -11,9 +11,9 @@ if ! type curl >/dev/null 2>&1; then
     MISSING_DEPS="TRUE"
     echo "$(tput setaf 1)curl is not installed!$(tput sgr0)"
 fi
-if ! type maim >/dev/null 2>&1; then
+if ! type import >/dev/null 2>&1; then
     MISSING_DEPS="TRUE"
-    echo "$(tput setaf 1)maim is not installed!$(tput sgr0)"
+    echo "$(tput setaf 1)imagemagick is not installed!$(tput sgr0)"
 fi
 if ! type yad >/dev/null 2>&1; then
     MISSING_DEPS="TRUE"

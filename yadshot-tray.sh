@@ -1,9 +1,9 @@
 #!/bin/bash
 # Title: yadshot
 # Author: simoniz0r
-# Description: Uses yad --undecorated --center to provide a simple GUI for running maim/slop options
+# Description: Uses yad to provide a simple GUI for using slop to capture screenshots using Imagemagick's import
 # License: GPL v2 Only
-# Dependencies: coreutils, maim, slop, yad, xclip, curl
+# Dependencies: coreutils, slop, imagemagick, yad, xclip, curl
 
 export RUNNING_DIR="$(dirname $(readlink -f $0))"
 
