@@ -39,15 +39,15 @@ capturefunc () {
             SS_DELAY=0.5
         fi
         sleep "$SS_DELAY"
-        import -descend -window root /tmp/"$SS_NAME"
+        import -window root /tmp/"$SS_NAME"
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "TRUE" ]; then
         read -r G < <(slop --nokeyboard -lc 84,124,188,0.2 -f "%g")
         sleep "$SS_DELAY"
-        import -descend -window root -crop $G /tmp/"$SS_NAME"
+        import -window root -crop $G /tmp/"$SS_NAME"
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ]; then
         read -r G < <(slop --nokeyboard -nlc 84,124,188,0.2 -f "%g")
         sleep "$SS_DELAY"
-        import -descend -window root -crop $G /tmp/"$SS_NAME"
+        import -window root -crop $G /tmp/"$SS_NAME"
     fi
 }
 
