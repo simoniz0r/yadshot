@@ -116,7 +116,9 @@ case $1 in
     -p*|--p*|-s*|--s*)
         IFS= read -r PASTE_PIPE
         if [ ! -z "$PASTE_PIPE" ]; then
-            echo -E "$PASTE_PIPE" | xclip -i -selection clipboard
+            while IFS= read -r line; do
+                printf '%s\n' "$line"
+            done | xclip -i -selection clipboard
             $TEKNIK -p
         else
             PASTE_INPUT="$(yad --form --title="yadshot" --center --height 600 --width 800 --field="":TXT "$(xclip -o -selection -clipboard)" --button=gtk-cancel:1 --button="Upload paste"\!gtk-copy:0)"
