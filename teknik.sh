@@ -46,7 +46,7 @@ clipboard() {
 	bin_there "xclip"
 	uploadme="/tmp/scrot.txt"
 
-	xclip -o > "$uploadme"
+	xclip -o -selection clipboard > "$uploadme"
 
 	word=clipboard
 }

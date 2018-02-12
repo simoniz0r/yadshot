@@ -33,7 +33,7 @@ function teknik_file() {
 export -f teknik_file
 
 function teknik_paste() {
-    "$RUNNING_DIR"/teknik.sh -p
+    "$RUNNING_DIR"/yadshot.sh -p
 }
 export -f teknik_paste
 

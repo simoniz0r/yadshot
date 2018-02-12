@@ -63,7 +63,16 @@ startfunc () {
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
             savesettingsfunc
-            $TEKNIK -p
+            PASTE_INPUT="$(yad --form --title="yadshot" --center --height 600 --width 800 --field="":TXT "$(xclip -o -selection -clipboard)" --button=gtk-cancel:1 --button="Upload paste"\!gtk-copy:0)"
+            case $? in
+                0)
+                    echo "$PASTE_INPUT" | xclip -i -selection -clipboard
+                    $TEKNIK -p
+                    ;;
+                *)
+                    exit 0
+                    ;;
+            esac
             ;;
         0)
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
@@ -87,8 +96,8 @@ startfunc () {
                     rm -f ~/.teknik
                     ;;
                 0)
-                    echo "$LIST_ITEM" | xclip -selection primary
-                    echo "$LIST_ITEM" | xclip -selection clipboard
+                    echo "$LIST_ITEM" | xclip -i -selection primary
+                    echo "$LIST_ITEM" | xclip -i -selection clipboard
                     yad --center --info --title="yadshot" --button=gtk-ok --text="$LIST_ITEM has been copied to clipboard."
                     ;;
             esac
@@ -103,12 +112,24 @@ startfunc () {
     esac
 }
 
-case $@ in
-    -p*|--p*)
-        $TEKNIK -p
-        ;;
-    -s*|--s*)
-        $TEKNIK -p
+case $1 in
+    -p*|--p*|-s*|--s*)
+        IFS= read -r PASTE_PIPE
+        if [ ! -z "$PASTE_PIPE" ]; then
+            echo -E "$PASTE_PIPE" | xclip -i -selection clipboard
+            $TEKNIK -p
+        else
+            PASTE_INPUT="$(yad --form --title="yadshot" --center --height 600 --width 800 --field="":TXT "$(xclip -o -selection -clipboard)" --button=gtk-cancel:1 --button="Upload paste"\!gtk-copy:0)"
+            case $? in
+                0)
+                    echo "$PASTE_INPUT" | xclip -i -selection -clipboard
+                    $TEKNIK -p
+                    ;;
+                *)
+                    exit 0
+                    ;;
+            esac
+        fi
         ;;
     -f*|--f*)
         FILE="$(yad --file --center --title=yadshot)"
