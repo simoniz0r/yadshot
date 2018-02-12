@@ -39,15 +39,27 @@ capturefunc () {
             SS_DELAY=0.5
         fi
         sleep "$SS_DELAY"
-        import -window root /tmp/"$SS_NAME"
+        if [ -f "$RUNNING_DIR/ImageMagick" ]; then
+            "$RUNNING_DIR/ImageMagick" import -window root /tmp/"$SS_NAME"
+        else
+            import -window root /tmp/"$SS_NAME"
+        fi
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "TRUE" ]; then
         read -r G < <(slop --nokeyboard -lc 0,119,255,0.34 -f "%g")
         sleep "$SS_DELAY"
-        import -window root -crop $G /tmp/"$SS_NAME"
+        if [ -f "$RUNNING_DIR/ImageMagick" ]; then
+            "$RUNNING_DIR/ImageMagick" import -window root -crop $G /tmp/"$SS_NAME"
+        else
+            import -window root -crop $G /tmp/"$SS_NAME"
+        fi
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ]; then
         read -r G < <(slop --nokeyboard -nlc 0,119,255,0.34 -f "%g")
         sleep "$SS_DELAY"
-        import -window root -crop $G /tmp/"$SS_NAME"
+        if [ -f "$RUNNING_DIR/ImageMagick" ]; then
+            "$RUNNING_DIR/ImageMagick" import -window root -crop $G /tmp/"$SS_NAME"
+        else
+            import -window root -crop $G /tmp/"$SS_NAME"
+        fi
     fi
 }
 
