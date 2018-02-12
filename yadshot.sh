@@ -11,7 +11,7 @@ if ! type curl >/dev/null 2>&1; then
     MISSING_DEPS="TRUE"
     echo "$(tput setaf 1)curl is not installed!$(tput sgr0)"
 fi
-if ! type import >/dev/null 2>&1 || [ ! -f "$RUNNING_DIR/ImageMagick" ]; then
+if ! type import >/dev/null 2>&1 && [ ! -f "$RUNNING_DIR/ImageMagick" ]; then
     MISSING_DEPS="TRUE"
     echo "$(tput setaf 1)imagemagick is not installed!$(tput sgr0)"
 fi
