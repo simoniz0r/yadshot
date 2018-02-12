@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # Title: yadshot
 # Author: simoniz0r
 # Description: Uses yad to provide a simple GUI for using slop to capture screenshots using Imagemagick's import
@@ -40,7 +40,7 @@ capturefunc () {
         fi
         sleep "$SS_DELAY"
         if [ -f "$RUNNING_DIR/ImageMagick" ]; then
-            "$RUNNING_DIR/ImageMagick" import -window root /tmp/"$SS_NAME"
+            $RUNNING_DIR/ImageMagick import -window root /tmp/"$SS_NAME"
         else
             import -window root /tmp/"$SS_NAME"
         fi
@@ -48,7 +48,7 @@ capturefunc () {
         read -r G < <(slop --nokeyboard -lc 0,119,255,0.34 -f "%g")
         sleep "$SS_DELAY"
         if [ -f "$RUNNING_DIR/ImageMagick" ]; then
-            "$RUNNING_DIR/ImageMagick" import -window root -crop $G /tmp/"$SS_NAME"
+            "$RUNNING_DIR"/ImageMagick import -window root -crop $G /tmp/"$SS_NAME"
         else
             import -window root -crop $G /tmp/"$SS_NAME"
         fi
@@ -56,7 +56,7 @@ capturefunc () {
         read -r G < <(slop --nokeyboard -nlc 0,119,255,0.34 -f "%g")
         sleep "$SS_DELAY"
         if [ -f "$RUNNING_DIR/ImageMagick" ]; then
-            "$RUNNING_DIR/ImageMagick" import -window root -crop $G /tmp/"$SS_NAME"
+            "$RUNNING_DIR"/ImageMagick import -window root -crop $G /tmp/"$SS_NAME"
         else
             import -window root -crop $G /tmp/"$SS_NAME"
         fi
@@ -71,7 +71,11 @@ displayssfunc () {
     HSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f4 -d" " | cut -f1 -d'.')
     if [ $WSCREEN_RES -le $WSIZE ] || [ $HSCREEN_RES -le $HSIZE ]; then
         mv /tmp/"$SS_NAME" /tmp/"$SS_NAME"_ORIGINAL
-        convert -resize 50% /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
+        if [ -f "$RUNNING_DIR/ImageMagick" ]; then
+            "$RUNNING_DIR"/ImageMagick convert -resize 50% /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
+        else
+            convert -resize 50% /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
+        fi
     fi
     OUTPUT="$(yad --center --form --always-print-result --no-escape --image="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" --button="Close"\!gtk-close:1 --button="Copy to clipboard"\!gtk-paste:2 --button="Upload to teknik"\!gtk-go-up:3 --button=gtk-save:4 --button="New Screenshot"\!gtk-new:0)"
     BUTTON_PRESSED="$?"
