@@ -32,10 +32,22 @@ TEKNIK="$RUNNING_DIR/teknik.sh"
 YADSHOT="$RUNNING_DIR/yadshot-capture.sh"
 TRAY="$RUNNING_DIR/yadshot-tray.sh"
 
+. ~/.config/yadshot/yadshot.conf
+
+savesettingsfunc () {
+    echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
+    echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
+    echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
+}
+
 startfunc () {
-    yad --center --title="yadshot" --text="Welcome to yadshot" --text-align="center" --height=100 --info --buttons-layout="edge" --button="Upload file/image"\!gtk-go-up:1 --button="Upload paste"\!gtk-copy:2 --button="New Screenshot"\!gtk-new:0 --button="View upload list"\!gtk-edit:4 --button=gtk-cancel:3
+    OUTPUT="$(yad --center --title="yadshot" --text="Screenshot Settings:" --text-align="center" --height=100 --form --always-print-result --no-escape --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" --buttons-layout="edge" --button="Upload file/image"\!gtk-go-up:1 --button="Upload paste"\!gtk-copy:2 --button="New Screenshot"\!gtk-new:0 --button="View upload list"\!gtk-edit:4 --button=gtk-cancel:3)"
     case $? in
         1)
+            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
+            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
+            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
+            savesettingsfunc
             FILE="$(yad --file --center --title=yadshot)"
             case $? in
                 0)
@@ -47,12 +59,24 @@ startfunc () {
             esac
             ;;
         2)
+            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
+            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
+            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
+            savesettingsfunc
             $TEKNIK -p
             ;;
         0)
+            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
+            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
+            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
+            savesettingsfunc
             $YADSHOT
             ;;
         4)
+            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
+            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
+            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
+            savesettingsfunc
             LIST_ITEM="$(yad --center --list --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
             case $? in
                 2)
@@ -70,6 +94,10 @@ startfunc () {
             esac
             ;;
         3)
+            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
+            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
+            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
+            savesettingsfunc
             exit 0
             ;;
     esac
