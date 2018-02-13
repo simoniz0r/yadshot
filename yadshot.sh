@@ -134,7 +134,7 @@ case $1 in
         fi
         ;;
     -f*|--f*)
-        FILE="$(yad --file --center --title=yadshot)"
+        FILE="$(yad --file $PWD --center --title=yadshot --height 600 --width 800)"
         case $? in
             0)
                 $TEKNIK "$FILE"
