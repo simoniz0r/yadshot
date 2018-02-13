@@ -41,14 +41,14 @@ savesettingsfunc () {
 }
 
 startfunc () {
-    OUTPUT="$(yad --center --title="yadshot" --text="Screenshot Settings:" --text-align="center" --height=100 --form --always-print-result --no-escape --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" --buttons-layout="edge" --button="Upload file/image"\!gtk-go-up:1 --button="Upload paste"\!gtk-copy:2 --button="New Screenshot"\!gtk-new:0 --button="View upload list"\!gtk-edit:4 --button=gtk-cancel:3)"
+    OUTPUT="$(yad --center --title="yadshot" --text="Screenshot Settings:\n\n" --text-align="center" --height=200 --form --always-print-result --no-escape --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" --buttons-layout="edge" --button="Upload file/image"\!gtk-go-up:1 --button="Upload paste"\!gtk-copy:2 --button="New Screenshot"\!gtk-new:0 --button="View upload list"\!gtk-edit:4 --button=gtk-cancel:3)"
     case $? in
         1)
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
             savesettingsfunc
-            FILE="$(yad --file --center --title=yadshot)"
+            FILE="$(yad --file $PWD --center --title=yadshot --height 600 --width 800)"
             case $? in
                 0)
                     $TEKNIK "$FILE"
@@ -86,7 +86,7 @@ startfunc () {
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
             savesettingsfunc
-            LIST_ITEM="$(yad --center --list --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
+            LIST_ITEM="$(yad --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
             case $? in
                 2)
                     sleep 0
