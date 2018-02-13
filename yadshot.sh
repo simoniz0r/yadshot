@@ -41,7 +41,7 @@ savesettingsfunc () {
 }
 
 startfunc () {
-    OUTPUT="$(yad --center --title="yadshot" --text="Screenshot Settings:\n\n" --text-align="center" --height=200 --form --always-print-result --no-escape --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" --buttons-layout="edge" --button="Upload file/image"\!gtk-go-up:1 --button="Upload paste"\!gtk-copy:2 --button="New Screenshot"\!gtk-new:0 --button="View upload list"\!gtk-edit:4 --button=gtk-cancel:3)"
+    OUTPUT="$(yad --center --title="yadshot" --text="Screenshot Settings:\n\n" --text-align="center" --height=200 --form --always-print-result --no-escape --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" --buttons-layout="edge" --button="New Screenshot"\!gtk-new:0 --button="Upload file/image"\!gtk-go-up:1 --button="Upload paste"\!gtk-copy:2 --button="View upload list"\!gtk-edit:4 --button=gtk-cancel:3)"
     case $? in
         1)
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
