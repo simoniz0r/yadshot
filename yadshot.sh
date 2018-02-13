@@ -96,8 +96,8 @@ startfunc () {
                     rm -f ~/.teknik
                     ;;
                 0)
-                    echo "$LIST_ITEM" | xclip -i -selection primary
-                    echo "$LIST_ITEM" | xclip -i -selection clipboard
+                    echo -n "$LIST_ITEM" | xclip -i -selection primary
+                    echo -n "$LIST_ITEM" | xclip -i -selection clipboard
                     yad --center --info --title="yadshot" --button=gtk-ok --text="$LIST_ITEM has been copied to clipboard."
                     ;;
             esac

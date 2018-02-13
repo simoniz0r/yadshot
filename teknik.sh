@@ -115,8 +115,8 @@ feedback() {
 	# Copy url to clipboard
 	if [[ "$clipboard" == true ]]; then
 		bin_there "xclip"
-		echo "$url" | xclip -selection primary
-		echo "$url" | xclip -selection clipboard
+		echo -n "$url" | xclip -selection primary
+		echo -n "$url" | xclip -selection clipboard
 	fi
 
 	# Log url

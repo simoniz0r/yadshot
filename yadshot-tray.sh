@@ -53,8 +53,8 @@ function upload_list() {
             rm -f ~/.teknik
             ;;
         0)
-            echo "$LIST_ITEM" | xclip -selection primary
-            echo "$LIST_ITEM" | xclip -selection clipboard
+            echo -n "$LIST_ITEM" | xclip -selection primary
+            echo -n "$LIST_ITEM" | xclip -selection clipboard
             yad --center --info --title="yadshot" --button=gtk-ok --text="$LIST_ITEM has been copied to clipboard."
             ;;
     esac
