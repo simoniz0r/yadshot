@@ -114,10 +114,9 @@ startfunc () {
 
 case $1 in
     -p*|--p*|-s*|--s*)
-        IFS= read -r PASTE_PIPE
-        if [ ! -z "$PASTE_PIPE" ]; then
-            while IFS= read -r line; do
-                printf '%s\n' "$line"
+        if readlink /proc/$$/fd/0 | grep -q "^pipe:"; then
+            while read -r line; do
+                echo -e "$line"
             done | xclip -i -selection clipboard
             $TEKNIK -p
         else
