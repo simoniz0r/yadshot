@@ -96,13 +96,8 @@ function yadshottray() {
     mkfifo $PIPE
     # attach a file descriptor to the file
     exec 3<> $PIPE
-    yad --notification                  \
-        --listen                        \
-        --image="gtk-dnd"              \
-        --text="yadshot"   \
-        --command="bash -c on_click"    \
-        --item-separator=","            \
-        --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|View Upload List,bash -c upload_list,gtk-edit" <&3
+    yad --notification --listen --image="gtk-dnd" --text="yadshot" --command="bash -c on_click" --item-separator="," \
+    --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|View Upload List,bash -c upload_list,gtk-edit" <&3
 }
 
 function savesettings() {
@@ -255,10 +250,10 @@ function startfunc() {
                     esac
                     ;;
                 *Paste*)
-                    PASTE_INPUT="$(yad --form --title="yadshot" --center --height 600 --width 800 --field="":TXT "$(xclip -o -selection clipboard)" --button=gtk-cancel:1 --button="Upload paste"\!gtk-copy:0)"
+                    PASTE_INPUT="$(yad --form --title="yadshot" --center --height 600 --width 800 --field="":TXT "$(xclip -o -selection -clipboard)" --button=gtk-cancel:1 --button="Upload paste"\!gtk-copy:0)"
                     case $? in
                         0)
-                            echo "$PASTE_INPUT" | xclip -i -selection clipboard
+                            echo -e "$PASTE_INPUT" | xclip -i -selection -clipboard
                             "$RUNNING_DIR"/teknik.sh -p
                             ;;
                         *)
@@ -304,10 +299,10 @@ case $1 in
             done | xclip -i -selection clipboard
             "$RUNNING_DIR"/teknik.sh -p
         else
-            PASTE_INPUT="$(yad --form --title="yadshot" --center --height 600 --width 800 --field="":TXT "$(xclip -o -selection clipboard)" --button=gtk-cancel:1 --button="Upload paste"\!gtk-copy:0)"
+            PASTE_INPUT="$(yad --form --title="yadshot" --center --height 600 --width 800 --field="":TXT "$(xclip -o -selection -clipboard)" --button=gtk-cancel:1 --button="Upload paste"\!gtk-copy:0)"
             case $? in
                 0)
-                    echo "$PASTE_INPUT" | xclip -i -selection clipboard
+                    echo "$PASTE_INPUT" | xclip -i -selection -clipboard
                     "$RUNNING_DIR"/teknik.sh -p
                     ;;
                 *)
