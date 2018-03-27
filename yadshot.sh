@@ -218,7 +218,7 @@ function buttonpressed() {
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
             savesettings
-            "$RUNNING_DIR"/yadshot.sh
+            "$RUNNING_DIR"/yadshot.sh -c
             ;;
     esac
 }
