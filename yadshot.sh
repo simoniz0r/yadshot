@@ -5,6 +5,8 @@
 # License: GPL v2 Only
 # Dependencies: coreutils, slop, imagemagick, yad, xclip, curl
 
+export RUNNING_DIR="$(dirname $(readlink -f $0))"
+
 if ! type curl >/dev/null 2>&1; then
     MISSING_DEPS="TRUE"
     echo "$(tput setaf 1)curl is not installed!$(tput sgr0)"
@@ -26,7 +28,6 @@ if [ "$MISSING_DEPS" = "TRUE" ]; then
     exit 1
 fi
 
-export RUNNING_DIR="$(dirname $(readlink -f $0))"
 SS_NAME="yadshot$(date +'%m-%d-%y-%H%M%S').png"
 SELECTION="TRUE"
 DECORATIONS="TRUE"
