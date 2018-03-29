@@ -6,4 +6,4 @@ Icon=/opt/yadshot/yadshot.png
 Type=Application
 Terminal=false
 StartupNotify=false
-Categories=Utilities;
+Categories=Utility;
