@@ -225,9 +225,9 @@ function buttonpressed() {
 }
 
 function startfunc() {
-    OUTPUT="$(yad --center --title="yadshot" --height=200 --form --always-print-result --no-escape --text-align="center" \
+    OUTPUT="$(yad --center --title="yadshot" --height=200 --form --always-print-result --no-escape \
     --separator="," --borders="10" --columns="2" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
-    --field="":LBL "" --field="":CB "New Screenshot!Upload File!Upload Paste!View Upload List" --field="":LBL "" --field="Capture selection":CHK "$SELECTION" \
+    --field=" ":LBL " " --field="":CB "New Screenshot!Upload File!Upload Paste!View Upload List" --field=" ":LBL " " --field="Capture selection":CHK "$SELECTION" \
     --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120")"
     case $? in
         0)
