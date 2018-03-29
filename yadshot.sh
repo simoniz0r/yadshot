@@ -100,6 +100,7 @@ function yadshottray() {
     yad --notification --listen --image="gtk-dnd" --text="yadshot" --command="bash -c on_click" --item-separator="," \
     --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|View Upload List,bash -c upload_list,gtk-edit" <&3
 }
+export -f yadshottray
 
 function savesettings() {
     echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
@@ -329,7 +330,7 @@ case $1 in
         exit 0
         ;;
     -t*|--t*)
-        yadshottray
+        bash -c 'yadshottray'
         ;;
     *)
         startfunc
