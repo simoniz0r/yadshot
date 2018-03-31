@@ -224,6 +224,33 @@ function buttonpressed() {
     esac
 }
 
+function yadshotpaste() {
+    PASTE_SETTINGS="$(yad --center --title="yadshot" --height=600 --width=600 --form --separator="," --borders="10" --no-markup --scroll \
+    --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 --field="Paste Title:":CE "yadshot-$(date +%F)-$(date +%T)" \
+    --field="Paste Syntax":CB "abap!abnf!as!as3!ada!adl!agda!aheui!alloy!at!ampl!ng2!antlr!antlr-as!antlr-csharp!antlr-cpp!antlr-java!antlr-objc!antlr-perl!antlr-python!antlr-ruby!apacheconf!apl!applescript!arduino!aspectj!aspx-cs!aspx-vb!asy!ahk!autoit!awk!basemake!bash!console!bat!bbcode!bc!befunge!bib!blitzbasic!blitzmax!bnf!boo!boogie!brainfuck!bro!bst!bugs!c!csharp!cpp!ca65!cadl!camkes!capdl!capnp!cbmbas!ceylon!cfengine3!cfs!chai!chapel!cheetah!cirru!clay!clean!clojure!clojurescript!cmake!c-objdump!cobol!cobolfree!coffee-script!cfc!cfm!common-lisp!componentpascal!coq!cpp-objdump!cpsa!crmsh!croc!cryptol!cr!csound-document!csound!csound-score!css!css+django!css+genshitext!css+lasso!css+mako!css+mozpreproc!css+myghty!css+php!css+erb!css+smarty!cuda!cypher!cython!d!dpatch!dart!control!sourceslist!delphi!dg!diff!django!d-objdump!docker!dtd!duel!dylan!dylan-console!dylan-lid!earl-grey!easytrieve!ebnf!ec!ecl!eiffel!elixir!iex!elm!emacs!ragel-em!erb!erlang!erl!evoque!ezhil!factor!fancy!fan!felix!fish!flatline!forth!fortran!fortranfixed!foxpro!fsharp!gap!gas!genshi!genshitext!pot!cucumber!glsl!gnuplot!go!golo!gooddata-cl!gosu!gst!groff!groovy!haml!handlebars!haskell!hx!hexdump!hsail!html!html+ng2!html+cheetah!html+django!html+evoque!html+genshi!html+handlebars!html+lasso!html+mako!html+myghty!html+php!html+smarty!html+twig!html+velocity!http!haxeml!hylang!hybris!idl!idris!igor!inform6!i6t!inform7!ini!io!ioke!irc!isabelle!j!jags!jasmin!java!jsp!js!js+cheetah!js+django!js+genshitext!js+lasso!js+mako!javascript+mozpreproc!js+myghty!js+php!js+erb!js+smarty!jcl!jsgf!json!json-object!jsonld!julia!jlcon!juttle!kal!kconfig!koka!kotlin!lasso!lean!less!lighty!limbo!liquid!lagda!lcry!lhs!lidr!live-script!llvm!logos!logtalk!lsl!lua!make!mako!maql!md!mask!mason!mathematica!matlab!matlabsession!minid!modelica!modula2!trac-wiki!monkey!monte!moocode!moon!mozhashpreproc!mozpercentpreproc!mql!mscgen!doscon!mupad!mxml!myghty!mysql!nasm!ncl!nemerle!nesc!newlisp!newspeak!nginx!nim!nit!nixos!nsis!numpy!nusmv!objdump!objdump-nasm!objective-c!objective-c++!objective-j!ocaml!octave!odin!ooc!opa!openedge!pacmanconf!pan!parasail!pawn!perl!perl6!php!pig!pike!pkgconfig!plpgsql!psql!postgresql!postscript!pov!powershell!ps1con!praat!prolog!properties!protobuf!pug!puppet!pypylog!python!python3!py3tb!pycon!pytb!qbasic!qml!qvto!racket!ragel!ragel-c!ragel-cpp!ragel-d!ragel-java!ragel-objc!ragel-ruby!raw!rconsole!rd!rebol!red!redcode!registry!rnc!resource!rst!rexx!rhtml!roboconf-graph!roboconf-instances!robotframework!spec!rql!rsl!rb!rbcon!rust!splus!sas!sass!scala!ssp!scaml!scheme!scilab!scss!shen!silver!slim!smali!smalltalk!smarty!snobol!snowball!sp!sparql!sql!sqlite3!squidconf!stan!sml!stata!sc!swift!swig!systemverilog!tads3!tap!tasm!tcl!tcsh!tcshcon!tea!termcap!terminfo!terraform!tex!text!thrift!todotxt!rts!tsql!treetop!turtle!twig!ts!typoscript!typoscriptcssdata!typoscripthtmldata!urbiscript!vala!vb.net!vcl!vclsnippets!vctreestatus!velocity!verilog!vgl!vhdl!vim!wdiff!whiley!x10!xml!xml+cheetah!xml+django!xml+evoque!xml+lasso!xml+mako!xml+myghty!xml+php!xml+erb!xml+smarty!xml+velocity!xquery!xslt!xtend!extempore!xul+mozpreproc!yaml!yaml+jinja!zephir" \
+    --field="Paste Contents:":LBL "Paste Contents:" --field="$(xclip -o -selection clipboard)":LBL "$(xclip -o -selection clipboard)")"
+    case $? in
+        0)
+            sleep 0
+            ;;
+        *)
+            exit 0
+            ;;
+    esac
+    PASTE_TITLE="$(echo -e $PASTE_SETTINGS | cut -f1 -d',')"
+    PASTE_SYNTAX="$(echo -e $PASTE_SETTINGS | cut -f2 -d',')"
+    PASTE_TEXT="$(xclip -o -selection clipboard)"
+    PASTE_URL="$(curl -s --data "title=$PASTE_TITLE&syntax=$PASTE_SYNTAX" --data-urlencode "code=$PASTE_TEXT" https://api.teknik.io/v1/Paste | cut -f10 -d'"')"
+    if [ -z "$PASTE_URL" ]; then
+        yad --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
+        exit 1
+    else
+        echo -n "$PASTE_URL" | xclip -i -selection primary
+        echo -n "$PASTE_URL" | xclip -i -selection clipboard
+        yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
+    fi
+}
+
 function startfunc() {
     OUTPUT="$(yad --center --title="yadshot" --height=200 --form --always-print-result --no-escape \
     --separator="," --borders="10" --columns="2" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
@@ -252,7 +279,8 @@ function startfunc() {
                     esac
                     ;;
                 *Paste*)
-                    "$RUNNING_DIR"/teknik.sh -p
+                    yadshotpaste
+                    exit 0
                     ;;
                 View*)
                     LIST_ITEM="$(yad --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
@@ -286,13 +314,40 @@ function startfunc() {
 
 case $1 in
     -p*|--p*|-s*|--s*)
+        shift
+        for ARG in "$@"; do
+            case "$ARG" in
+                -t|--title)
+                    shift
+                    PASTE_TITLE="$1"
+                    shift
+                    ;;
+                -s|--syntax)
+                    shift
+                    PASTE_SYNTAX="$1"
+                    shift
+                    ;;
+            esac
+        done
         if readlink /proc/$$/fd/0 | grep -q "^pipe:"; then
             while read -r line; do
                 echo -e "$line"
             done | xclip -i -selection clipboard
-            "$RUNNING_DIR"/teknik.sh -p
+            [ -z "$PASTE_TITLE" ] && PASTE_TITLE="yadshot-$(date +%F)-$(date +%T)"
+            [ -z "$PASTE_SYNTAX" ] && PASTE_SYNTAX="text"
+            PASTE_TEXT="$(xclip -o -selection clipboard)"
+            PASTE_URL="$(curl -s --data "title=$PASTE_TITLE&syntax=$PASTE_SYNTAX" --data-urlencode "code=$PASTE_TEXT" https://api.teknik.io/v1/Paste | cut -f10 -d'"')"
+            if [ -z "$PASTE_URL" ]; then
+                yad --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
+                exit 1
+            else
+                echo -n "$PASTE_URL" | xclip -i -selection primary
+                echo -n "$PASTE_URL" | xclip -i -selection clipboard
+                yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
+            fi
         else
-            "$RUNNING_DIR"/teknik.sh -p
+            yadshotpaste
+            exit 0
         fi
         ;;
     -f*|--f*)
