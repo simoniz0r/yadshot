@@ -24,6 +24,10 @@ if ! type xclip >/dev/null 2>&1; then
     MISSING_DEPS="TRUE"
     echo "$(tput setaf 1)xclip is not installed!$(tput sgr0)"
 fi
+if ! type slop >/dev/null 2>&1; then
+    MISSING_DEPS="TRUE"
+    echo "$(tput setaf 1)slop is not installed!$(tput sgr0)"
+fi
 if [ "$MISSING_DEPS" = "TRUE" ]; then
     echo "$(tput setaf 1)Missing one or more packages required to run; exiting...$(tput sgr0)"
     exit 1
