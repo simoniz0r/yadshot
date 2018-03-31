@@ -252,16 +252,7 @@ function startfunc() {
                     esac
                     ;;
                 *Paste*)
-                    PASTE_INPUT="$(yad --form --title="yadshot" --center --height 600 --width 800 --field="":TXT "$(xclip -o -selection -clipboard)" --button=gtk-cancel:1 --button="Upload paste"\!gtk-copy:0)"
-                    case $? in
-                        0)
-                            echo -e "$PASTE_INPUT" | xclip -i -selection -clipboard
-                            "$RUNNING_DIR"/teknik.sh -p
-                            ;;
-                        *)
-                            exit 0
-                            ;;
-                    esac
+                    "$RUNNING_DIR"/teknik.sh -p
                     ;;
                 View*)
                     LIST_ITEM="$(yad --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
@@ -301,16 +292,7 @@ case $1 in
             done | xclip -i -selection clipboard
             "$RUNNING_DIR"/teknik.sh -p
         else
-            PASTE_INPUT="$(yad --form --title="yadshot" --center --height 600 --width 800 --field="":TXT "$(xclip -o -selection -clipboard)" --button=gtk-cancel:1 --button="Upload paste"\!gtk-copy:0)"
-            case $? in
-                0)
-                    echo "$PASTE_INPUT" | xclip -i -selection -clipboard
-                    "$RUNNING_DIR"/teknik.sh -p
-                    ;;
-                *)
-                    exit 0
-                    ;;
-            esac
+            "$RUNNING_DIR"/teknik.sh -p
         fi
         ;;
     -f*|--f*)
