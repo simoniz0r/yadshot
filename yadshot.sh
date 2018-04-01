@@ -342,8 +342,33 @@ function startfunc() {
     esac
 }
 
+function yadshothelp() {
+printf '%s\n' "yadshot v0.1.93
+yadshot provides a GUI frontend for taking screenshots with ImageMagick/slop.
+yadshot can upload screenshots and files to teknik.io, and it can also upload
+pastes to paste.rs
+
+Arguments:
+
+yadshot      Open yadshot's main menu.
+
+yadshot -c   Capture a screenshot.  Screenshot will be shown after capture with
+             options to copy to clipboard, upload, or save.
+
+yadshot -p   Upload a paste from your clipboard to paste.rs.  Text may also be piped in from stdin.
+             Syntax may be specified with '--syntax' or '-s'. Ex:
+             'cat ./somefile.sh | yadshot -p -s sh'
+
+yadshot -t   Open a system tray app for quick access to yadshot.
+"
+}
+
 case $1 in
-    -p*|--p*|-s*|--s*)
+    -h|--help)
+        yadshothelp
+        exit 0
+        ;;
+    -p|--paste)
         shift
         for ARG in "$@"; do
             case "$ARG" in
@@ -376,7 +401,7 @@ case $1 in
             exit 0
         fi
         ;;
-    -f*|--f*)
+    -f|--file)
         FILE="$(yad --file $PWD --center --title=yadshot --height 600 --width 800)"
         case $? in
             0)
@@ -387,12 +412,12 @@ case $1 in
                 ;;
         esac
         ;;
-    -c*|--c*)
+    -c|--capture)
         yadshotcapture
         displayss
         exit 0
         ;;
-    -t*|--t*)
+    -t|--tray)
         bash -c 'yadshottray'
         ;;
     *)
