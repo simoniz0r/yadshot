@@ -4,13 +4,15 @@ yadshot uses ImageMagick/slop to take screenshots.  yadshot can upload screensho
 
 yadshot provides the following options:
 
-yadshot : Opens a yad dialog with choices between uploading a file/image, a paste, or taking a screenshot.
+yadshot : Open yadshot's main menu.
 
-yadshot -c : Captures a screenshot using slop and imagemagick's import.  Uses yad to display the screenshot and give options to copy, upload, or save the screenshot.
+yadshot -c : Capture a screenshot.  Screenshot will be shown after capture with options to copy to clipboard, upload, or save.
 
-yadshot -p : Upload a paste from your clipboard to teknik.io.  Text may also be piped in from stdin.
+yadshot -p : Upload a paste from your clipboard to paste.rs.  Text may also be piped in from stdin.
+             Syntax may be specified with '--syntax' or '-s'. Ex:
+             'cat ./somefile.sh | yadshot -p -s sh'
 
-yadshot -t : Opens a system tray app that gives options between uploading a file/image, paste, or taking a screenshot.
+yadshot -t : Open a system tray app for quick access to yadshot.
 
 Dependencies: slop, imagemagick, yad, xclip, curl
 
