@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=yadshot
 Comment=A bash script that uses yad to provide a GUI front end for maim/slop. Images can be copied to clipboard, uploaded to imgur, or saved
-Exec=/opt/yadshot/yadshot.sh
-Icon=/opt/yadshot/yadshot.png
+Exec=yadshot
+Icon=yadshot
 Type=Application
 Terminal=false
 StartupNotify=false
