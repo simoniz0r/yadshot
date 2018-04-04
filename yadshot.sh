@@ -380,7 +380,7 @@ case $1 in
             esac
         done
         if readlink /proc/$$/fd/0 | grep -q "^pipe:"; then
-            while read -r line; do
+            while IFS= read line; do
                 echo -e "$line"
             done > /tmp/yadshotpaste.txt
             [ -z "$PASTE_SYNTAX" ] && PASTE_SYNTAX=""
