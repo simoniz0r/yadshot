@@ -343,7 +343,7 @@ function startfunc() {
 }
 
 function yadshothelp() {
-printf '%s\n' "yadshot v0.1.94
+printf '%s\n' "yadshot v0.1.95
 yadshot provides a GUI frontend for taking screenshots with ImageMagick/slop.
 yadshot can upload screenshots and files to teknik.io, and it can also upload
 pastes to paste.rs
