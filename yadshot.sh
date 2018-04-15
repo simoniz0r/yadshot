@@ -5,9 +5,10 @@
 # License: GPL v2 Only
 # Dependencies: coreutils, slop, imagemagick, yad, xclip, curl
 
+# export running directory variables for use later
 export YADSHOT_PATH="$(readlink -f $0)"
 export RUNNING_DIR="$(dirname $(readlink -f $0))"
-
+# check for dependencies
 if ! type curl >/dev/null 2>&1; then
     MISSING_DEPS="TRUE"
     echo "$(tput setaf 1)curl is not installed!$(tput sgr0)"
@@ -32,19 +33,19 @@ if [ "$MISSING_DEPS" = "TRUE" ]; then
     echo "$(tput setaf 1)Missing one or more packages required to run; exiting...$(tput sgr0)"
     exit 1
 fi
-
+# set default variables
 SS_NAME="yadshot$(date +'%m-%d-%y-%H%M%S').png"
 SELECTION="TRUE"
 DECORATIONS="TRUE"
 SS_DELAY=0
-
+# create yadshot config dir
 if [ ! -d ~/.config/yadshot ]; then
     mkdir ~/.config/yadshot
     echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
     echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
     echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
 fi
-
+# source yadshot config file
 [ -f "$HOME/.config/yadshot/yadshot.conf" ] && . ~/.config/yadshot/yadshot.conf
 
 # add handler to manage process shutdown
@@ -61,32 +62,32 @@ function on_click() {
     exit 0
 }
 export -f on_click
-
+# function for uploading file from tray
 function teknik_file() {
     "$YADSHOT_PATH" -f
     exit 0
 }
 export -f teknik_file
-
+# function for uploading paste from tray
 function teknik_paste() {
     "$YADSHOT_PATH" -p
     exit 0
 }
 export -f teknik_paste
-
+# function for capturing screenshot from tray
 function yadshot_capture() {
     "$YADSHOT_PATH" -c
     exit 0
 }
 export -f yadshot_capture
-
+# function for launching color picker from tray
 function yadcolor() {
     COLOR_SELECTION="$(yad --center --title="yadshot" --color)"
     [ ! -z "$COLOR_SELECTION" ] && echo -n "$COLOR_SELECTION" | xclip -i -selection primary && echo -n "$COLOR_SELECTION" | xclip -i -selection clipboard
     exit 0
 }
 export -f yadcolor
-
+# function to view upload list from tray
 function upload_list() {
     LIST_ITEM="$(yad --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
     case $? in
@@ -118,14 +119,15 @@ function yadshottray() {
     --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|Color Picker,bash -c yadcolor,gtk-color-picker|View Upload List,bash -c upload_list,gtk-edit" <&3
 }
 export -f yadshottray
-
+# save settings to yadshot config dir
 function savesettings() {
     echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
     echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
     echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
 }
-
+# upload screenshots and files to teknik.io; set FAILED=1 if upload fails
 function yadshotupload() {
+    # if file is png, set type
     if [[ "$1" =~ ".png" ]]; then
         FILE_URL="$(curl -s -F file="@$1;type=image/png" "https://api.teknik.io/v1/Upload")"
         echo "$FILE_URL"
@@ -155,7 +157,7 @@ function yadshotupload() {
         fi
     fi
 }
-
+# capture screenshot using slop and imagemagick
 function yadshotcapture() {
     . ~/.config/yadshot/yadshot.conf
     if [ "$SELECTION" = "FALSE" ]; then
@@ -186,7 +188,7 @@ function yadshotcapture() {
         fi
     fi
 }
-
+# display screenshot; resize it first if it's too large to be displayed on user's screen
 function displayss() {
     . ~/.config/yadshot/yadshot.conf
     WSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" " | awk '{print $1 * .75}' | cut -f1 -d'.')
@@ -209,7 +211,7 @@ function displayss() {
     fi
     buttonpressed
 }
-
+# detect button pressed from displayss function and run relevant tasks
 function buttonpressed() {
     case $BUTTON_PRESSED in
         1)
@@ -266,7 +268,7 @@ function buttonpressed() {
             ;;
     esac
 }
-
+# upload paste from clipboard to paste.rs with optional syntax
 function yadshotpaste() {
     echo "$(xclip -o -selection clipboard)" > /tmp/yadshotpaste.txt
     PASTE_SETTINGS="$(yad --center --title="yadshot" --height=100 --width=300 --form --separator="," --borders="10" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
@@ -293,7 +295,7 @@ function yadshotpaste() {
         yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
     fi
 }
-
+# main yadshot window with screenshot options and dropdown menu
 function startfunc() {
     OUTPUT="$(yad --center --title="yadshot" --height=200 --form --always-print-result --no-escape \
     --separator="," --borders="10" --columns="2" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
@@ -357,7 +359,7 @@ function startfunc() {
             ;;
     esac
 }
-
+# help function
 function yadshothelp() {
 printf '%s\n' "yadshot v0.1.96
 yadshot provides a GUI frontend for taking screenshots with ImageMagick/slop.
@@ -378,12 +380,13 @@ yadshot -p   Upload a paste from your clipboard to paste.rs.  Text may also be p
 yadshot -t   Open a system tray app for quick access to yadshot.
 "
 }
-
+# detect arguments
 case $1 in
     -h|--help)
         yadshothelp
         exit 0
         ;;
+    # use 'while IFS= read line; do' to check if data piped in from stdin otherwise display file chooser
     -p|--paste)
         shift
         for ARG in "$@"; do
