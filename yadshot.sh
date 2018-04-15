@@ -80,12 +80,12 @@ function yadshot_capture() {
 }
 export -f yadshot_capture
 
-function yadcolor() {
-    COLOR_SELECTION="$(yad --center --title="yadshot" --color)"
-    [ ! -z "$COLOR_SELECTION" ] && echo -n "$COLOR_SELECTION" | xclip -i -selection primary && echo -n "$COLOR_SELECTION" | xclip -i -selection clipboard
+function yadcolour() {
+    COLOR_SELECTION="$(yad --center --title="yadshot" --colour)"
+    [ ! -z "$COLOUR_SELECTION" ] && echo -n "$COLOUR_SELECTION" | xclip -i -selection primary && echo -n "$COLOUR_SELECTION" | xclip -i -selection clipboard
     exit 0
 }
-export -f yadcolor
+export -f yadcolour
 
 function upload_list() {
     LIST_ITEM="$(yad --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
@@ -115,7 +115,7 @@ function yadshottray() {
     # attach a file descriptor to the file
     exec 3<> $PIPE
     yad --notification --listen --image="gtk-dnd" --text="yadshot" --command="bash -c on_click" --item-separator="," \
-    --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|Color Picker,bash -c yadcolor,gtk-color-picker|View Upload List,bash -c upload_list,gtk-edit" <&3
+    --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|Colour Picker,bash -c yadcolor,gtk-color-picker|View Upload List,bash -c upload_list,gtk-edit" <&3
 }
 export -f yadshottray
 
