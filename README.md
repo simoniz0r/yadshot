@@ -5,16 +5,22 @@ yadshot uses ImageMagick/slop to take screenshots.  yadshot can upload screensho
 Arguments:
 
 ```
-yadshot      Open yadshot's main menu.
 
-yadshot -c   Capture a screenshot.  Screenshot will be shown after capture with
-             options to copy to clipboard, upload, or save.
+--capture, -c       Capture a screenshot.  Screenshot will be shown after capture with
+                    options to copy to clipboard, upload, or save.
 
-yadshot -p   Upload a paste from your clipboard to paste.rs.  Text may also be piped in from stdin.
-             Syntax may be specified with '--syntax' or '-s'. Ex:
-             'cat ./somefile.sh | yadshot -p -s sh'
+--settings, -s      Show screenshot settings before capturing a screenshot.
 
-yadshot -t   Open a system tray app for quick access to yadshot.
+--paste, -p         Upload a paste from your clipboard to paste.rs.  Text may also be piped in from stdin.
+                    Syntax may be specified with '--syntax' or '-s'. Ex:
+                    'cat ./somefile.sh | yadshot -p -s sh'
+
+--color, -C         Open color picker.  Color will be copied to clipboard if 'Ok' is pressed.
+
+--tray, -t          Open a system tray app for quick access to yadshot.
+
+If no argument is passed, yadshot's main menu will be shown.
+
 ```
 
 Dependencies: slop, imagemagick, yad, xclip, curl
