@@ -82,7 +82,7 @@ function yadshot_capture() {
 export -f yadshot_capture
 # function for launching color picker from tray
 function yadshotcolor() {
-    COLOR_SELECTION="$(yad --center --title="yadshot" --color)"
+    COLOR_SELECTION="$(yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --title="yadshot" --color)"
     case $? in
         0)
             echo -n "$COLOR_SELECTION" | xclip -i -selection clipboard
@@ -96,19 +96,19 @@ function yadshotcolor() {
 export -f yadshotcolor
 # function to view upload list from tray
 function upload_list() {
-    LIST_ITEM="$(yad --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
+    LIST_ITEM="$(yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
     case $? in
         2)
             sleep 0
             ;;
         1)
-            yad --center --info --title="yadshot" --button=gtk-ok --text="~/.teknik has been removed!"
+            yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --info --title="yadshot" --button=gtk-ok --text="~/.teknik has been removed!"
             rm -f ~/.teknik
             ;;
         0)
             echo -n "$LIST_ITEM" | xclip -selection primary
             echo -n "$LIST_ITEM" | xclip -selection clipboard
-            yad --center --info --title="yadshot" --button=gtk-ok --text="$LIST_ITEM has been copied to clipboard."
+            yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --info --title="yadshot" --button=gtk-ok --text="$LIST_ITEM has been copied to clipboard."
             ;;
     esac
 }
@@ -122,7 +122,7 @@ function yadshottray() {
     mkfifo $PIPE
     # attach a file descriptor to the file
     exec 3<> $PIPE
-    yad --notification --listen --image="gtk-dnd" --text="yadshot" --command="bash -c on_click" --item-separator="," \
+    yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --notification --listen --image="gtk-fullscreen" --text="yadshot" --command="bash -c on_click" --item-separator="," \
     --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|Color Picker,bash -c yadshotcolor,gtk-color-picker|View Upload List,bash -c upload_list,gtk-edit" <&3
 }
 export -f yadshottray
@@ -136,7 +136,7 @@ export -f yadshotsavesettings
 # change yadshot's settings
 function yadshotsettings() {
     . ~/.config/yadshot/yadshot.conf
-    OUTPUT="$(yad --center --title="yadshot" --height=200 --columns=1 --form --no-escape --separator="," --borders="10" \
+    OUTPUT="$(yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --title="yadshot" --height=200 --columns=1 --form --no-escape --separator="," --borders="10" \
     --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" \
     --field="Delay before capture":NUM "$SS_DELAY!0..120" --button="gtk-ok")"
     SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
@@ -160,20 +160,20 @@ function yadshotupload() {
             echo -n "$FILE_URL" | xclip -selection primary
             echo -n "$FILE_URL" | xclip -selection clipboard
             echo "$FILE_URL" >> ~/.teknik
-            yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Picture uploaded to $FILE_URL"
+            yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="$FILE_URL"
         fi
     else
         FILE_URL=$(curl -s -F file="@$1" "https://api.teknik.io/v1/Upload")
         echo "$FILE_URL"
         if [[ ! "$FILE_URL" =~ "http" ]]; then
             echo 'error uploading file!\n'
-            yad --center --error --title="yadshot" --text="Failed to upload $1"
+            yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --error --title="yadshot" --text="Failed to upload $1"
         else
             FILE_URL="$(echo $FILE_URL | cut -f6 -d'"')"
             echo -n "$FILE_URL" | xclip -selection primary
             echo -n "$FILE_URL" | xclip -selection clipboard
             echo "$FILE_URL" >> ~/.teknik
-            yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="File uploaded to $FILE_URL"
+            yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="$FILE_URL"
         fi
     fi
 }
@@ -223,7 +223,7 @@ function displayss() {
             convert -resize 50% /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
         fi
     fi
-    OUTPUT="$(yad --center --form --always-print-result --no-escape --image="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" --field="!gtk-color-picker!Color Picker":FBTN "yad --color --center --title=yadshot" --button="Close"\!gtk-close:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0)"
+    OUTPUT="$(yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --form --always-print-result --no-escape --image="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" --field="!gtk-color-picker!Color Picker":FBTN "yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --color --center --title=yadshot" --button="Close"\!gtk-close:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0)"
     BUTTON_PRESSED="$?"
     if [ -f /tmp/"$SS_NAME"_ORIGINAL ]; then
         rm -f /tmp/"$SS_NAME"
@@ -270,7 +270,7 @@ function buttonpressed() {
                     displayss
                     ;;
                 1)
-                    yad --center --error --title="yadshot" --text="$SS_NAME upload failed; screenshot stored in $HOME/Pictures/$SS_NAME"
+                    yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --error --title="yadshot" --text="$SS_NAME upload failed; screenshot stored in $HOME/Pictures/$SS_NAME"
                     displayss
                     ;;
             esac
@@ -280,7 +280,7 @@ function buttonpressed() {
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
             yadshotsavesettings
-            SAVE_DIR=$(yad --center --file --save --confirm-overwrite --title="yadshot" --width=800 --height=600 --text="Save $SS_NAME as...")
+            SAVE_DIR=$(yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --file --save --confirm-overwrite --title="yadshot" --width=800 --height=600 --text="Save $SS_NAME as...")
             cp /tmp/"$SS_NAME" "$SAVE_DIR"
             displayss
             ;;
@@ -297,7 +297,7 @@ function buttonpressed() {
 }
 # upload paste from clipboard to paste.rs with optional syntax
 function yadshotpaste() {
-    PASTE_SETTINGS="$(yad --center --title="yadshot" --height=600 --width=800 --form --separator="," --borders="10" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
+    PASTE_SETTINGS="$(yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --title="yadshot" --height=600 --width=800 --form --separator="," --borders="10" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
     --field="Paste Syntax:":CE "Appfile!Berksfile!Brewfile!C!Cheffile!DOT!Deliverfile!Emakefile!Fastfile!GNUmakefile!Gemfile!Guardfile!M!Makefile!OCamlMakefile!PL!R!Rakefile!Rantfile!Rprofile!S!SConscript!SConstruct!Scanfile!Sconstruct!Snakefile!Snapfile!Thorfile!Vagrantfile!adp!applescript!as!asa!asp!babel!bash!bat!bib!bsh!build!builder!c!c++!capfile!cc!cgi!cl!clj!cls!cmd!config.ru!cp!cpp!cpy!cs!css!css.erb!css.liquid!csx!cxx!d!ddl!di!diff!dml!dot!dpr!dtml!el!emakefile!erb!erbsql!erl!es6!fasl!fcgi!gemspec!go!gradle!groovy!gvy!gyp!gypi!h!h!h!h!h++!haml!hh!hpp!hrl!hs!htm!html!html.erb!hxx!inc!inl!ipp!irbrc!java!jbuilder!js!js.erb!json!jsp!jsx!l!lhs!lisp!lsp!ltx!lua!m!mak!make!makefile!markdn!markdown!matlab!md!mdown!mk!ml!mli!mll!mly!mm!mud!opml!p!pas!patch!php!php3!php4!php5!php7!phps!phpt!phtml!pl!pm!pod!podspec!prawn!properties!py!py3!pyi!pyw!r!rabl!rails!rake!rb!rbx!rd!re!rest!rhtml!rjs!rpy!rs!rss!rst!ruby.rail!rxml!s!sass!sbt!scala!scm!sconstruct!sh!shtml!simplecov!sql!sql.erb!ss!sty!svg!swift!t!tcl!tex!textile!thor!tld!tmpl!tpl!ts!tsx!txt!wscript!xhtml!xml!xsd!xslt!yaml!yaws!yml!zsh" \
     --field="Paste":TXT "$(xclip -o -selection clipboard)")"
     case $? in
@@ -316,13 +316,13 @@ function yadshotpaste() {
     PASTE_URL="$(curl -s --data-binary @/tmp/yadshotpaste.txt https://paste.rs/ | head -n 1)$PASTE_SYNTAX"
     rm -f /tmp/yadshotpaste.txt
     if [[ ! "$PASTE_URL" =~ "http" ]]; then
-        yad --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
+        yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
         exit 1
     else
         echo -n "$PASTE_URL" | xclip -i -selection primary
         echo -n "$PASTE_URL" | xclip -i -selection clipboard
         echo "$PASTE_URL" >> ~/.teknik
-        yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
+        yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
     fi
 }
 # upload paste from stdin to paste.rs
@@ -334,19 +334,19 @@ function yadshotpastepipe() {
     PASTE_URL="$(curl -s --data-binary @/tmp/yadshotpaste.txt https://paste.rs/ | head -n 1)$PASTE_SYNTAX"
     rm -f /tmp/yadshotpaste.txt
     if [[ ! "$PASTE_URL" =~ "http" ]]; then
-        yad --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
+        yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
         exit 1
     else
         echo -n "$PASTE_URL" | xclip -i -selection primary
         echo -n "$PASTE_URL" | xclip -i -selection clipboard
         echo "$PASTE_URL"
         echo "$PASTE_URL" >> ~/.teknik
-        yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
+        yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
     fi
 }
 # main yadshot window with screenshot options and dropdown menu
 function startfunc() {
-    yad --center --title="yadshot" --height=200 --width=325 --form --no-escape --button-layout="center" \
+    yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --title="yadshot" --height=200 --width=325 --form --no-escape --separator="" --button-layout="center" \
     --borders="20" --columns="1" --button="New Screenshot"\!gtk-add:0 --button="Close"\!gtk-cancel:1 \
     --field="Upload File!gtk-go-up":FBTN "$YADSHOT_PATH -f" --field="Upload Paste!gtk-copy":FBTN "$YADSHOT_PATH -p" \
     --field="Color Picker!gtk-color-picker":FBTN "$YADSHOT_PATH -C" --field="View Upload List!gtk-edit":FBTN "bash -c upload_list" \
@@ -365,7 +365,7 @@ function startfunc() {
 }
 # help function
 function yadshothelp() {
-printf '%s\n' "yadshot v0.1.97
+printf '%s\n' "yadshot v0.1.98
 yadshot provides a GUI frontend for taking screenshots with ImageMagick/slop.
 yadshot can upload screenshots and files to teknik.io, and it can also upload
 pastes to paste.rs
@@ -415,7 +415,7 @@ case $1 in
         fi
         ;;
     -f|--file)
-        FILE="$(yad --file $PWD --center --title=yadshot --height 600 --width 800)"
+        FILE="$(yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --file $PWD --center --title=yadshot --height 600 --width 800)"
         case $? in
             0)
                 yadshotupload "$FILE"
