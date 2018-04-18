@@ -81,12 +81,19 @@ function yadshot_capture() {
 }
 export -f yadshot_capture
 # function for launching color picker from tray
-function yadcolor() {
+function yadshotcolor() {
     COLOR_SELECTION="$(yad --center --title="yadshot" --color)"
-    [ ! -z "$COLOR_SELECTION" ] && echo -n "$COLOR_SELECTION" | xclip -i -selection primary && echo -n "$COLOR_SELECTION" | xclip -i -selection clipboard
-    exit 0
+    case $? in
+        0)
+            echo -n "$COLOR_SELECTION" | xclip -i -selection clipboard
+            exit 0
+            ;;
+        *)
+            exit 0
+            ;;
+    esac
 }
-export -f yadcolor
+export -f yadshotcolor
 # function to view upload list from tray
 function upload_list() {
     LIST_ITEM="$(yad --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
@@ -116,7 +123,7 @@ function yadshottray() {
     # attach a file descriptor to the file
     exec 3<> $PIPE
     yad --notification --listen --image="gtk-dnd" --text="yadshot" --command="bash -c on_click" --item-separator="," \
-    --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|Color Picker,bash -c yadcolor,gtk-color-picker|View Upload List,bash -c upload_list,gtk-edit" <&3
+    --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|Color Picker,bash -c yadshotcolor,gtk-color-picker|View Upload List,bash -c upload_list,gtk-edit" <&3
 }
 export -f yadshottray
 # save settings to yadshot config dir
@@ -203,7 +210,7 @@ function displayss() {
             convert -resize 50% /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
         fi
     fi
-    OUTPUT="$(yad --center --form --always-print-result --no-escape --image="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" --field="!gtk-color-picker!Color Picker":FBTN "bash -c yadcolor" --button="Close"\!gtk-close:1 --button="Copy to clipboard"\!gtk-paste:2 --button="Upload to teknik"\!gtk-go-up:3 --button=gtk-save:4 --button="New Screenshot"\!gtk-new:0)"
+    OUTPUT="$(yad --center --form --always-print-result --no-escape --image="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" --field="!gtk-color-picker!Color Picker":FBTN "yad --color --center --title=yadshot" --button="Close"\!gtk-close:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0)"
     BUTTON_PRESSED="$?"
     if [ -f /tmp/"$SS_NAME"_ORIGINAL ]; then
         rm -f /tmp/"$SS_NAME"
@@ -227,10 +234,17 @@ function buttonpressed() {
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
             savesettings
+            "$YADSHOT_PATH"
+            ;;
+        3)
+            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
+            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
+            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
+            savesettings
             xclip -selection clipboard -t image/png -i < /tmp/"$SS_NAME"
             displayss
             ;;
-        3)
+        4)
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
@@ -248,7 +262,7 @@ function buttonpressed() {
                     ;;
             esac
             ;;
-        4)
+        5)
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
@@ -295,6 +309,25 @@ function yadshotpaste() {
         yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
     fi
 }
+# upload paste from stdin to paste.rs
+function yadshotpastepipe() {
+    while IFS= read line; do
+        echo -e "$line"
+    done > /tmp/yadshotpaste.txt
+    [ -z "$PASTE_SYNTAX" ] && PASTE_SYNTAX=""
+    PASTE_URL="$(curl -s --data-binary @/tmp/yadshotpaste.txt https://paste.rs/ | head -n 1)$PASTE_SYNTAX"
+    rm -f /tmp/yadshotpaste.txt
+    if [[ ! "$PASTE_URL" =~ "http" ]]; then
+        yad --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
+        exit 1
+    else
+        echo -n "$PASTE_URL" | xclip -i -selection primary
+        echo -n "$PASTE_URL" | xclip -i -selection clipboard
+        echo "$PASTE_URL"
+        echo "$PASTE_URL" >> ~/.teknik
+        yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
+    fi
+}
 # main yadshot window with screenshot options and dropdown menu
 function startfunc() {
     OUTPUT="$(yad --center --title="yadshot" --height=200 --form --always-print-result --no-escape \
@@ -328,7 +361,7 @@ function startfunc() {
                     exit 0
                     ;;
                 Color*)
-                    yadcolor
+                    yadshotcolor
                     ;;
                 View*)
                     LIST_ITEM="$(yad --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
@@ -377,6 +410,8 @@ yadshot -p   Upload a paste from your clipboard to paste.rs.  Text may also be p
              Syntax may be specified with '--syntax' or '-s'. Ex:
              'cat ./somefile.sh | yadshot -p -s sh'
 
+yadshot -C   Open color picker.  Color will be copied to clipboard if 'Ok' is pressed.
+
 yadshot -t   Open a system tray app for quick access to yadshot.
 "
 }
@@ -399,22 +434,7 @@ case $1 in
             esac
         done
         if readlink /proc/$$/fd/0 | grep -q "^pipe:"; then
-            while IFS= read line; do
-                echo -e "$line"
-            done > /tmp/yadshotpaste.txt
-            [ -z "$PASTE_SYNTAX" ] && PASTE_SYNTAX=""
-            PASTE_URL="$(curl -s --data-binary @/tmp/yadshotpaste.txt https://paste.rs/ | head -n 1)$PASTE_SYNTAX"
-            rm -f /tmp/yadshotpaste.txt
-            if [[ ! "$PASTE_URL" =~ "http" ]]; then
-                yad --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
-                exit 1
-            else
-                echo -n "$PASTE_URL" | xclip -i -selection primary
-                echo -n "$PASTE_URL" | xclip -i -selection clipboard
-                echo "$PASTE_URL"
-                echo "$PASTE_URL" >> ~/.teknik
-                yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
-            fi
+            yadshotpastepipe
         else
             yadshotpaste
             exit 0
@@ -434,6 +454,10 @@ case $1 in
     -c|--capture)
         yadshotcapture
         displayss
+        exit 0
+        ;;
+    -C|--color)
+        yadshotcolor
         exit 0
         ;;
     -t|--tray)
