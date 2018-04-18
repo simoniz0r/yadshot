@@ -76,7 +76,7 @@ function teknik_paste() {
 export -f teknik_paste
 # function for capturing screenshot from tray
 function yadshot_capture() {
-    "$YADSHOT_PATH" -c
+    "$YADSHOT_PATH" -s
     exit 0
 }
 export -f yadshot_capture
@@ -127,11 +127,24 @@ function yadshottray() {
 }
 export -f yadshottray
 # save settings to yadshot config dir
-function savesettings() {
+function yadshotsavesettings() {
     echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
     echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
     echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
 }
+export -f yadshotsavesettings
+# change yadshot's settings
+function yadshotsettings() {
+    . ~/.config/yadshot/yadshot.conf
+    OUTPUT="$(yad --center --title="yadshot" --height=200 --columns=1 --form --no-escape --separator="," --borders="10" \
+    --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" \
+    --field="Delay before capture":NUM "$SS_DELAY!0..120" --button="gtk-ok")"
+    SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
+    DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
+    SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
+    yadshotsavesettings
+}
+export -f yadshotsettings
 # upload screenshots and files to teknik.io; set FAILED=1 if upload fails
 function yadshotupload() {
     # if file is png, set type
@@ -225,7 +238,7 @@ function buttonpressed() {
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            savesettings
+            yadshotsavesettings
             rm -f /tmp/"$SS_NAME"
             exit 0
             ;;
@@ -233,14 +246,14 @@ function buttonpressed() {
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            savesettings
+            yadshotsavesettings
             "$YADSHOT_PATH"
             ;;
         3)
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            savesettings
+            yadshotsavesettings
             xclip -selection clipboard -t image/png -i < /tmp/"$SS_NAME"
             displayss
             ;;
@@ -248,7 +261,7 @@ function buttonpressed() {
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            savesettings
+            yadshotsavesettings
             cp /tmp/"$SS_NAME" $HOME/Pictures/"$SS_NAME"
             yadshotupload "$HOME/Pictures/$SS_NAME"
             case $FAILED in
@@ -266,7 +279,7 @@ function buttonpressed() {
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            savesettings
+            yadshotsavesettings
             SAVE_DIR=$(yad --center --file --save --confirm-overwrite --title="yadshot" --width=800 --height=600 --text="Save $SS_NAME as...")
             cp /tmp/"$SS_NAME" "$SAVE_DIR"
             displayss
@@ -277,16 +290,16 @@ function buttonpressed() {
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
             DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
             SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            savesettings
+            yadshotsavesettings
             "$YADSHOT_PATH" -c
             ;;
     esac
 }
 # upload paste from clipboard to paste.rs with optional syntax
 function yadshotpaste() {
-    echo "$(xclip -o -selection clipboard)" > /tmp/yadshotpaste.txt
-    PASTE_SETTINGS="$(yad --center --title="yadshot" --height=100 --width=300 --form --separator="," --borders="10" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
-    --field="Paste Syntax:":CE "Appfile!Berksfile!Brewfile!C!Cheffile!DOT!Deliverfile!Emakefile!Fastfile!GNUmakefile!Gemfile!Guardfile!M!Makefile!OCamlMakefile!PL!R!Rakefile!Rantfile!Rprofile!S!SConscript!SConstruct!Scanfile!Sconstruct!Snakefile!Snapfile!Thorfile!Vagrantfile!adp!applescript!as!asa!asp!babel!bash!bat!bib!bsh!build!builder!c!c++!capfile!cc!cgi!cl!clj!cls!cmd!config.ru!cp!cpp!cpy!cs!css!css.erb!css.liquid!csx!cxx!d!ddl!di!diff!dml!dot!dpr!dtml!el!emakefile!erb!erbsql!erl!es6!fasl!fcgi!gemspec!go!gradle!groovy!gvy!gyp!gypi!h!h!h!h!h++!haml!hh!hpp!hrl!hs!htm!html!html.erb!hxx!inc!inl!ipp!irbrc!java!jbuilder!js!js.erb!json!jsp!jsx!l!lhs!lisp!lsp!ltx!lua!m!mak!make!makefile!markdn!markdown!matlab!md!mdown!mk!ml!mli!mll!mly!mm!mud!opml!p!pas!patch!php!php3!php4!php5!php7!phps!phpt!phtml!pl!pm!pod!podspec!prawn!properties!py!py3!pyi!pyw!r!rabl!rails!rake!rb!rbx!rd!re!rest!rhtml!rjs!rpy!rs!rss!rst!ruby.rail!rxml!s!sass!sbt!scala!scm!sconstruct!sh!shtml!simplecov!sql!sql.erb!ss!sty!svg!swift!t!tcl!tex!textile!thor!tld!tmpl!tpl!ts!tsx!txt!wscript!xhtml!xml!xsd!xslt!yaml!yaws!yml!zsh")"
+    PASTE_SETTINGS="$(yad --center --title="yadshot" --height=600 --width=800 --form --separator="," --borders="10" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
+    --field="Paste Syntax:":CE "Appfile!Berksfile!Brewfile!C!Cheffile!DOT!Deliverfile!Emakefile!Fastfile!GNUmakefile!Gemfile!Guardfile!M!Makefile!OCamlMakefile!PL!R!Rakefile!Rantfile!Rprofile!S!SConscript!SConstruct!Scanfile!Sconstruct!Snakefile!Snapfile!Thorfile!Vagrantfile!adp!applescript!as!asa!asp!babel!bash!bat!bib!bsh!build!builder!c!c++!capfile!cc!cgi!cl!clj!cls!cmd!config.ru!cp!cpp!cpy!cs!css!css.erb!css.liquid!csx!cxx!d!ddl!di!diff!dml!dot!dpr!dtml!el!emakefile!erb!erbsql!erl!es6!fasl!fcgi!gemspec!go!gradle!groovy!gvy!gyp!gypi!h!h!h!h!h++!haml!hh!hpp!hrl!hs!htm!html!html.erb!hxx!inc!inl!ipp!irbrc!java!jbuilder!js!js.erb!json!jsp!jsx!l!lhs!lisp!lsp!ltx!lua!m!mak!make!makefile!markdn!markdown!matlab!md!mdown!mk!ml!mli!mll!mly!mm!mud!opml!p!pas!patch!php!php3!php4!php5!php7!phps!phpt!phtml!pl!pm!pod!podspec!prawn!properties!py!py3!pyi!pyw!r!rabl!rails!rake!rb!rbx!rd!re!rest!rhtml!rjs!rpy!rs!rss!rst!ruby.rail!rxml!s!sass!sbt!scala!scm!sconstruct!sh!shtml!simplecov!sql!sql.erb!ss!sty!svg!swift!t!tcl!tex!textile!thor!tld!tmpl!tpl!ts!tsx!txt!wscript!xhtml!xml!xsd!xslt!yaml!yaws!yml!zsh" \
+    --field="Paste":TXT "$(xclip -o -selection clipboard)")"
     case $? in
         0)
             sleep 0
@@ -295,8 +308,11 @@ function yadshotpaste() {
             exit 0
             ;;
     esac
-    PASTE_SYNTAX="$(echo -e $PASTE_SETTINGS | cut -f1 -d',')"
+    echo -e "$PASTE_SETTINGS"
+    PASTE_SYNTAX="$(echo $PASTE_SETTINGS | cut -f1 -d',')"
     [ ! -z "$PASTE_SYNTAX" ] && PASTE_SYNTAX=".$PASTE_SYNTAX"
+    PASTE_CONTENT="$(echo -e "$PASTE_SETTINGS" | cut -f2- -d',')"
+    echo "$PASTE_CONTENT" > /tmp/yadshotpaste.txt
     PASTE_URL="$(curl -s --data-binary @/tmp/yadshotpaste.txt https://paste.rs/ | head -n 1)$PASTE_SYNTAX"
     rm -f /tmp/yadshotpaste.txt
     if [[ ! "$PASTE_URL" =~ "http" ]]; then
@@ -330,89 +346,47 @@ function yadshotpastepipe() {
 }
 # main yadshot window with screenshot options and dropdown menu
 function startfunc() {
-    OUTPUT="$(yad --center --title="yadshot" --height=200 --form --always-print-result --no-escape \
-    --separator="," --borders="10" --columns="2" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
-    --field=" ":LBL " " --field="":CB "New Screenshot!Upload File!Upload Paste!Color Picker!View Upload List" --field=" ":LBL " " --field="Capture selection":CHK "$SELECTION" \
-    --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120")"
+    yad --center --title="yadshot" --height=200 --width=325 --form --no-escape --button-layout="center" \
+    --borders="20" --columns="1" --button="New Screenshot"\!gtk-add:0 --button="Close"\!gtk-cancel:1 \
+    --field="Upload File!gtk-go-up":FBTN "$YADSHOT_PATH -f" --field="Upload Paste!gtk-copy":FBTN "$YADSHOT_PATH -p" \
+    --field="Color Picker!gtk-color-picker":FBTN "$YADSHOT_PATH -C" --field="View Upload List!gtk-edit":FBTN "bash -c upload_list" \
+    --field="Settings!gtk-preferences":FBTN "bash -c yadshotsettings" --field="Start Tray App!gtk-go-down":FBTN "bash -c yadshottray"
     case $? in
         0)
-            SELECTION="$(echo $OUTPUT | cut -f4 -d",")"
-            DECORATIONS="$(echo $OUTPUT | cut -f5 -d",")"
-            SS_DELAY="$(echo $OUTPUT | cut -f6 -d",")"
-            savesettings
-            case $(echo $OUTPUT | cut -f2 -d',') in
-                New*)
-                    yadshotcapture
-                    displayss
-                    ;;
-                *File*)
-                    FILE="$(yad --file $PWD --center --title=yadshot --height 600 --width 800)"
-                    case $? in
-                        0)
-                            yadshotupload "$FILE"
-                            ;;
-                        *)
-                            exit 0
-                            ;;
-                    esac
-                    ;;
-                *Paste*)
-                    yadshotpaste
-                    exit 0
-                    ;;
-                Color*)
-                    yadshotcolor
-                    ;;
-                View*)
-                    LIST_ITEM="$(yad --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
-                    case $? in
-                        2)
-                            sleep 0
-                            ;;
-                        1)
-                            yad --center --info --title="yadshot" --button=gtk-ok --text="~/.teknik has been removed!"
-                            rm -f ~/.teknik
-                            ;;
-                        0)
-                            echo -n "$LIST_ITEM" | xclip -i -selection primary
-                            echo -n "$LIST_ITEM" | xclip -i -selection clipboard
-                            yad --center --info --title="yadshot" --button=gtk-ok --text="$LIST_ITEM has been copied to clipboard."
-                            ;;
-                    esac
-                    ;;
-            esac
+            yadshotsettings
+            yadshotcapture
+            displayss
             exit 0
             ;;
-        1)
-            SELECTION="$(echo $OUTPUT | cut -f4 -d",")"
-            DECORATIONS="$(echo $OUTPUT | cut -f5 -d",")"
-            SS_DELAY="$(echo $OUTPUT | cut -f6 -d",")"
-            savesettings
+        *)
             exit 0
             ;;
     esac
 }
 # help function
 function yadshothelp() {
-printf '%s\n' "yadshot v0.1.96
+printf '%s\n' "yadshot v0.1.97
 yadshot provides a GUI frontend for taking screenshots with ImageMagick/slop.
 yadshot can upload screenshots and files to teknik.io, and it can also upload
 pastes to paste.rs
 
 Arguments:
 
-yadshot      Open yadshot's main menu.
+--capture, -c       Capture a screenshot.  Screenshot will be shown after capture with
+                    options to copy to clipboard, upload, or save.
 
-yadshot -c   Capture a screenshot.  Screenshot will be shown after capture with
-             options to copy to clipboard, upload, or save.
+--settings, -s      Show screenshot settings before capturing a screenshot.
 
-yadshot -p   Upload a paste from your clipboard to paste.rs.  Text may also be piped in from stdin.
-             Syntax may be specified with '--syntax' or '-s'. Ex:
-             'cat ./somefile.sh | yadshot -p -s sh'
+--paste, -p         Upload a paste from your clipboard to paste.rs.  Text may also be piped in from stdin.
+                    Syntax may be specified with '--syntax' or '-s'. Ex:
+                    'cat ./somefile.sh | yadshot -p -s sh'
 
-yadshot -C   Open color picker.  Color will be copied to clipboard if 'Ok' is pressed.
+--color, -C         Open color picker.  Color will be copied to clipboard if 'Ok' is pressed.
 
-yadshot -t   Open a system tray app for quick access to yadshot.
+--tray, -t          Open a system tray app for quick access to yadshot.
+
+If no argument is passed, yadshot's main menu will be shown.
+
 "
 }
 # detect arguments
@@ -450,6 +424,12 @@ case $1 in
                 exit 0
                 ;;
         esac
+        ;;
+    -s|--settings)
+        yadshotsettings
+        yadshotcapture
+        displayss
+        exit 0
         ;;
     -c|--capture)
         yadshotcapture
