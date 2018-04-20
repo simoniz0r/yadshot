@@ -297,22 +297,19 @@ function buttonpressed() {
 }
 # upload paste from clipboard to paste.rs with optional syntax
 function yadshotpaste() {
-    PASTE_SETTINGS="$(yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --title="yadshot" --height=600 --width=800 --form --separator="," --borders="10" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
-    --field="Paste Syntax:":CE "Appfile!Berksfile!Brewfile!C!Cheffile!DOT!Deliverfile!Emakefile!Fastfile!GNUmakefile!Gemfile!Guardfile!M!Makefile!OCamlMakefile!PL!R!Rakefile!Rantfile!Rprofile!S!SConscript!SConstruct!Scanfile!Sconstruct!Snakefile!Snapfile!Thorfile!Vagrantfile!adp!applescript!as!asa!asp!babel!bash!bat!bib!bsh!build!builder!c!c++!capfile!cc!cgi!cl!clj!cls!cmd!config.ru!cp!cpp!cpy!cs!css!css.erb!css.liquid!csx!cxx!d!ddl!di!diff!dml!dot!dpr!dtml!el!emakefile!erb!erbsql!erl!es6!fasl!fcgi!gemspec!go!gradle!groovy!gvy!gyp!gypi!h!h!h!h!h++!haml!hh!hpp!hrl!hs!htm!html!html.erb!hxx!inc!inl!ipp!irbrc!java!jbuilder!js!js.erb!json!jsp!jsx!l!lhs!lisp!lsp!ltx!lua!m!mak!make!makefile!markdn!markdown!matlab!md!mdown!mk!ml!mli!mll!mly!mm!mud!opml!p!pas!patch!php!php3!php4!php5!php7!phps!phpt!phtml!pl!pm!pod!podspec!prawn!properties!py!py3!pyi!pyw!r!rabl!rails!rake!rb!rbx!rd!re!rest!rhtml!rjs!rpy!rs!rss!rst!ruby.rail!rxml!s!sass!sbt!scala!scm!sconstruct!sh!shtml!simplecov!sql!sql.erb!ss!sty!svg!swift!t!tcl!tex!textile!thor!tld!tmpl!tpl!ts!tsx!txt!wscript!xhtml!xml!xsd!xslt!yaml!yaws!yml!zsh" \
+    PASTE_CONTENT="$(yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --title="yadshot" --height=600 --width=800 --form --separator="" --borders="10" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
     --field="Paste":TXT "$(xclip -o -selection clipboard)")"
     case $? in
         0)
-            sleep 0
+            echo -e "$PASTE_CONTENT" > /tmp/yadshotpaste.txt
             ;;
         *)
             exit 0
             ;;
     esac
-    echo -e "$PASTE_SETTINGS"
-    PASTE_SYNTAX="$(echo $PASTE_SETTINGS | cut -f1 -d',')"
+    PASTE_SYNTAX="$(yad --center --title="yadshot" --height=100 --width=300 --form --separator="" --borders="10" --button="Ok"\!gtk-ok \
+    --field="Paste Syntax:":CE "Appfile!Berksfile!Brewfile!C!Cheffile!DOT!Deliverfile!Emakefile!Fastfile!GNUmakefile!Gemfile!Guardfile!M!Makefile!OCamlMakefile!PL!R!Rakefile!Rantfile!Rprofile!S!SConscript!SConstruct!Scanfile!Sconstruct!Snakefile!Snapfile!Thorfile!Vagrantfile!adp!applescript!as!asa!asp!babel!bash!bat!bib!bsh!build!builder!c!c++!capfile!cc!cgi!cl!clj!cls!cmd!config.ru!cp!cpp!cpy!cs!css!css.erb!css.liquid!csx!cxx!d!ddl!di!diff!dml!dot!dpr!dtml!el!emakefile!erb!erbsql!erl!es6!fasl!fcgi!gemspec!go!gradle!groovy!gvy!gyp!gypi!h!h!h!h!h++!haml!hh!hpp!hrl!hs!htm!html!html.erb!hxx!inc!inl!ipp!irbrc!java!jbuilder!js!js.erb!json!jsp!jsx!l!lhs!lisp!lsp!ltx!lua!m!mak!make!makefile!markdn!markdown!matlab!md!mdown!mk!ml!mli!mll!mly!mm!mud!opml!p!pas!patch!php!php3!php4!php5!php7!phps!phpt!phtml!pl!pm!pod!podspec!prawn!properties!py!py3!pyi!pyw!r!rabl!rails!rake!rb!rbx!rd!re!rest!rhtml!rjs!rpy!rs!rss!rst!ruby.rail!rxml!s!sass!sbt!scala!scm!sconstruct!sh!shtml!simplecov!sql!sql.erb!ss!sty!svg!swift!t!tcl!tex!textile!thor!tld!tmpl!tpl!ts!tsx!txt!wscript!xhtml!xml!xsd!xslt!yaml!yaws!yml!zsh")"
     [ ! -z "$PASTE_SYNTAX" ] && PASTE_SYNTAX=".$PASTE_SYNTAX"
-    PASTE_CONTENT="$(echo -e "$PASTE_SETTINGS" | cut -f2- -d',')"
-    echo "$PASTE_CONTENT" > /tmp/yadshotpaste.txt
     PASTE_URL="$(curl -s --data-binary @/tmp/yadshotpaste.txt https://paste.rs/ | head -n 1)$PASTE_SYNTAX"
     rm -f /tmp/yadshotpaste.txt
     if [[ ! "$PASTE_URL" =~ "http" ]]; then
@@ -322,26 +319,7 @@ function yadshotpaste() {
         echo -n "$PASTE_URL" | xclip -i -selection primary
         echo -n "$PASTE_URL" | xclip -i -selection clipboard
         echo "$PASTE_URL" >> ~/.teknik
-        yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
-    fi
-}
-# upload paste from stdin to paste.rs
-function yadshotpastepipe() {
-    while IFS= read line; do
-        echo -e "$line"
-    done > /tmp/yadshotpaste.txt
-    [ -z "$PASTE_SYNTAX" ] && PASTE_SYNTAX=""
-    PASTE_URL="$(curl -s --data-binary @/tmp/yadshotpaste.txt https://paste.rs/ | head -n 1)$PASTE_SYNTAX"
-    rm -f /tmp/yadshotpaste.txt
-    if [[ ! "$PASTE_URL" =~ "http" ]]; then
-        yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
-        exit 1
-    else
-        echo -n "$PASTE_URL" | xclip -i -selection primary
-        echo -n "$PASTE_URL" | xclip -i -selection clipboard
-        echo "$PASTE_URL"
-        echo "$PASTE_URL" >> ~/.teknik
-        yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="Paste uploaded to $PASTE_URL"
+        yad --window-icon="/usr/share/icons/hicolor/64x64/apps/yadshot.png" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="$PASTE_URL"
     fi
 }
 # main yadshot window with screenshot options and dropdown menu
@@ -365,7 +343,7 @@ function startfunc() {
 }
 # help function
 function yadshothelp() {
-printf '%s\n' "yadshot v0.1.98
+printf '%s\n' "yadshot v0.1.99
 yadshot provides a GUI frontend for taking screenshots with ImageMagick/slop.
 yadshot can upload screenshots and files to teknik.io, and it can also upload
 pastes to paste.rs
@@ -408,7 +386,22 @@ case $1 in
             esac
         done
         if readlink /proc/$$/fd/0 | grep -q "^pipe:"; then
-            yadshotpastepipe
+            while IFS= read line; do
+                echo -e "$line"
+            done > /tmp/yadshotpaste.txt
+            [ -z "$PASTE_SYNTAX" ] && PASTE_SYNTAX=""
+            PASTE_URL="$(curl -s --data-binary @/tmp/yadshotpaste.txt https://paste.rs/ | head -n 1)$PASTE_SYNTAX"
+            rm -f /tmp/yadshotpaste.txt
+            if [[ ! "$PASTE_URL" =~ "http" ]]; then
+                yad --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
+                exit 1
+            else
+                echo -n "$PASTE_URL" | xclip -i -selection primary
+                echo -n "$PASTE_URL" | xclip -i -selection clipboard
+                echo "$PASTE_URL"
+                echo "$PASTE_URL" >> ~/.teknik
+                yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="$PASTE_URL"
+            fi
         else
             yadshotpaste
             exit 0
