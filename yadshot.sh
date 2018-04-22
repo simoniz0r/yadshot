@@ -159,13 +159,21 @@ function yadshotupload() {
         if [[ ! "$FILE_URL" =~ "http" ]]; then
             echo 'error uploading file!\n'
             FAILED=1
+            yad --window-icon="$ICON_PATH" --center --error --title="yadshot" --text="$SS_NAME upload failed; screenshot stored in $HOME/Pictures/$SS_NAME"
         else
             FAILED=0
+            rm -f "$HOME/Pictures/$SS_NAME"
             FILE_URL="$(echo $FILE_URL | cut -f6 -d'"')"
             echo -n "$FILE_URL" | xclip -selection primary
             echo -n "$FILE_URL" | xclip -selection clipboard
             echo "$FILE_URL" >> ~/.teknik
-            yad --window-icon="$ICON_PATH" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="$FILE_URL"
+            yad --window-icon="$ICON_PATH" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button="Back"\!gtk-ok:0 --button="Close"\!gtk-close:1 --text="$FILE_URL"
+            case $? in
+                1)
+                    rm -f /tmp/"$SS_NAME"
+                    exit 0
+                    ;;
+            esac
         fi
     else
         FILE_URL=$(curl -s -F file="@$1" "https://api.teknik.io/v1/Upload")
@@ -269,16 +277,7 @@ function buttonpressed() {
             yadshotsavesettings
             cp /tmp/"$SS_NAME" $HOME/Pictures/"$SS_NAME"
             yadshotupload "$HOME/Pictures/$SS_NAME"
-            case $FAILED in
-                0)
-                    rm -f "$HOME/Pictures/$SS_NAME"
-                    displayss
-                    ;;
-                1)
-                    yad --window-icon="$ICON_PATH" --center --error --title="yadshot" --text="$SS_NAME upload failed; screenshot stored in $HOME/Pictures/$SS_NAME"
-                    displayss
-                    ;;
-            esac
+            displayss
             ;;
         5)
             SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
@@ -348,7 +347,7 @@ function startfunc() {
 }
 # help function
 function yadshothelp() {
-printf '%s\n' "yadshot v0.1.99.1
+printf '%s\n' "yadshot v0.1.99.2
 yadshot provides a GUI frontend for taking screenshots with ImageMagick/slop.
 yadshot can upload screenshots and files to teknik.io, and it can also upload
 pastes to paste.rs
@@ -363,6 +362,8 @@ Arguments:
 --paste, -p         Upload a paste from your clipboard to paste.rs.  Text may also be piped in from stdin.
                     Syntax may be specified with '--syntax' or '-s'. Ex:
                     'cat ./somefile.sh | yadshot -p -s sh'
+
+--file, -f          Open the file chooser and upload a file to teknik.io
 
 --color, -C         Open color picker.  Color will be copied to clipboard if 'Ok' is pressed.
 
