@@ -15,6 +15,8 @@ Arguments:
                     Syntax may be specified with '--syntax' or '-s'. Ex:
                     'cat ./somefile.sh | yadshot -p -s sh'
 
+--file, -f          Open file chooser to upload a file to teknik.io
+
 --color, -C         Open color picker.  Color will be copied to clipboard if 'Ok' is pressed.
 
 --tray, -t          Open a system tray app for quick access to yadshot.
