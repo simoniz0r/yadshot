@@ -294,11 +294,13 @@ function displayss() {
     HSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" " | awk '{print $1 * .75}' | cut -f1 -d'.')
     WSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f2 -d" " | cut -f1 -d'.')
     HSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f4 -d" " | cut -f1 -d'.')
+    WSIZEYAD=$(($WSIZE+75))
+    HSIZEYAD=$(($HSIZE+75))
     if [ $WSCREEN_RES -le $WSIZE ] || [ $HSCREEN_RES -le $HSIZE ]; then
         yad --window-icon="$ICON_PATH" --center --picture --size=fit --width=$WSCREEN_RES --height=$HSCREEN_RES --no-escape --filename="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" \
         --button="Close"\!gtk-close:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0
     else
-        yad --window-icon="$ICON_PATH" --center --picture --size=orig --no-escape --filename="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" \
+        yad --window-icon="$ICON_PATH" --center --picture --size=orig --width=$WSIZEYAD --height=$HSIZEYAD --no-escape --filename="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" \
         --button="Close"\!gtk-close:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0
     fi
     BUTTON_PRESSED="$?"
