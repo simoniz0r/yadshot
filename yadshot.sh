@@ -18,9 +18,9 @@ if ! type curl >/dev/null 2>&1; then
     MISSING_DEPS="TRUE"
     echo "$(tput setaf 1)curl is not installed!$(tput sgr0)"
 fi
-if ! type import >/dev/null 2>&1 && [ ! -f "$RUNNING_DIR/ImageMagick" ]; then
+if ! type import >/dev/null 2>&1 && [ ! -f "$RUNNING_DIR/ImageMagick" ] && ! type ffmpeg >/dev/null 2>&1; then
     MISSING_DEPS="TRUE"
-    echo "$(tput setaf 1)imagemagick is not installed!$(tput sgr0)"
+    echo "$(tput setaf 1)imagemagick or ffmpeg not installed!$(tput sgr0)"
 fi
 if ! type yad >/dev/null 2>&1; then
     MISSING_DEPS="TRUE"
@@ -43,15 +43,30 @@ SS_NAME="yadshot$(date +'%m-%d-%y-%H%M%S').png"
 SELECTION="TRUE"
 DECORATIONS="TRUE"
 SS_DELAY=0
+if type ffmpeg >/dev/null 2>&1; then
+    export YSHOT_IMAGE_PLUGIN="ffmpeg"
+elif type import >/dev/null 2>&1 || [ -f "$RUNNING_DIR/ImageMagick" ]; then
+    export YSHOT_IMAGE_PLUGIN="ImageMagick"
+else
+    export YSHOT_IMAGE_PLUGIN="Unknown"
+fi
 # create yadshot config dir
-if [ ! -d ~/.config/yadshot ]; then
-    mkdir ~/.config/yadshot
+if [ ! -d "$HOME/.config/yadshot" ]; then
+    mkdir -p ~/.config/yadshot
     echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
     echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
     echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
+    echo "YSHOT_IMAGE_PLUGIN="\"$YSHOT_IMAGE_PLUGIN\""" >> ~/.config/yadshot/yadshot.conf
 fi
 # source yadshot config file
 [ -f "$HOME/.config/yadshot/yadshot.conf" ] && . ~/.config/yadshot/yadshot.conf
+if [ ! -d "$HOME/.config/yadshot/plugins" ]; then
+    mkdir -p ~/.config/yadshot/plugins
+    echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
+    echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
+    echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
+    echo "YSHOT_IMAGE_PLUGIN="\"$YSHOT_IMAGE_PLUGIN\""" >> ~/.config/yadshot/yadshot.conf
+fi
 
 # add handler to manage process shutdown
 function on_exit() {
@@ -128,7 +143,7 @@ function yadshottray() {
     # attach a file descriptor to the file
     exec 3<> $PIPE
     yad --window-icon="$ICON_PATH" --notification --listen --image="$ICON_PATH" --text="yadshot" --command="bash -c on_click" --item-separator="," \
-    --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|Color Picker,bash -c yadshotcolor,gtk-color-picker|View Upload List,bash -c upload_list,gtk-edit" <&3
+    --menu="New Screenshot,bash -c $YADSHOT_PATH -s,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|Color Picker,bash -c yadshotcolor,gtk-color-picker|View Upload List,bash -c upload_list,gtk-edit" <&3
 }
 export -f yadshottray
 # save settings to yadshot config dir
@@ -136,17 +151,28 @@ function yadshotsavesettings() {
     echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
     echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
     echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
+    echo "YSHOT_IMAGE_PLUGIN="\"$YSHOT_IMAGE_PLUGIN\""" >> ~/.config/yadshot/yadshot.conf
 }
 export -f yadshotsavesettings
 # change yadshot's settings
 function yadshotsettings() {
     . ~/.config/yadshot/yadshot.conf
+    YSHOT_PLUGIN_LIST="$(dir -C -w 1 $HOME/.config/yadshot/plugins | tr '\n' '!')"
+    if type import >/dev/null 2>&1 || [ -f "$RUNNING_DIR/ImageMagick" ]; then
+        YSHOT_PLUGIN_LIST="ImageMagick!$YSHOT_PLUGIN_LIST"
+    fi
+    if type ffmpeg >/dev/null 2>&1; then
+        YSHOT_PLUGIN_LIST="ffmpeg!$YSHOT_PLUGIN_LIST"
+    fi
+    YSHOT_PLUGIN_LIST="$(echo $YSHOT_PLUGIN_LIST | tr '!' '\n' | grep -v "$YSHOT_IMAGE_PLUGIN" | tr '!' '\n' | rev | cut -f2- -d'!' | rev)"
+    YSHOT_PLUGIN_LIST="$YSHOT_IMAGE_PLUGIN!$YSHOT_PLUGIN_LIST"
     OUTPUT="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=200 --columns=1 --form --no-escape --separator="," --borders="10" \
-    --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" \
-    --field="Delay before capture":NUM "$SS_DELAY!0..120" --button="gtk-ok")"
+    --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" \
+    --field="Image capture plugin":CB "$YSHOT_PLUGIN_LIST" --button="gtk-ok")"
     SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
     DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
     SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
+    YSHOT_IMAGE_PLUGIN="$(echo $OUTPUT | cut -f4 -d",")"
     yadshotsavesettings
 }
 export -f yadshotsettings
@@ -190,6 +216,25 @@ function yadshotupload() {
         fi
     fi
 }
+# detect which image capture plugin to use
+function yadshotcaptureselect() {
+    case "$YSHOT_IMAGE_PLUGIN" in
+        ImageMagick)
+            yadshotcapture
+            ;;
+        ffmpeg)
+            yadshotcaptureffmpeg
+            ;;
+        *)
+            if [ -f "$HOME/.config/yadshot/plugins/$YSHOT_IMAGE_PLUGIN" ]; then
+                source ~/.config/yadshot/plugins/"$YSHOT_IMAGE_PLUGIN"
+                yadshotcaptureplugin
+            else
+                yadshotcapture
+            fi
+            ;;
+    esac
+}
 # capture screenshot using slop and imagemagick
 function yadshotcapture() {
     . ~/.config/yadshot/yadshot.conf
@@ -221,6 +266,27 @@ function yadshotcapture() {
         fi
     fi
 }
+# capture screenshot using slop and ffmpeg
+function yadshotcaptureffmpeg() {
+    . ~/.config/yadshot/yadshot.conf
+    if [ "$SELECTION" = "FALSE" ]; then
+        if [ $SS_DELAY -eq 0 ]; then
+            SS_DELAY=0.5
+        fi
+        sleep "$SS_DELAY"
+        W=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" ")
+        H=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" ")
+        ffmpeg -f x11grab -s "$W"x"$H" -i :0.0 -vframes 1 /tmp/"$SS_NAME" > /dev/null 2>&1
+    elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "TRUE" ]; then
+        read -r X Y W H G ID < <(slop --nokeyboard -lc 0,119,255,0.34 -f "%x %y %w %h %g %i")
+        sleep "$SS_DELAY"
+        ffmpeg -f x11grab -s "$W"x"$H" -i :0.0+$X,$Y -vframes 1 /tmp/"$SS_NAME" > /dev/null 2>&1
+    elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ]; then
+        read -r X Y W H G ID < <(slop --nokeyboard -nlc 0,119,255,0.34 -f "%x %y %w %h %g %i")
+        sleep "$SS_DELAY"
+        ffmpeg -f x11grab -s "$W"x"$H" -i :0.0+$X,$Y -vframes 1 /tmp/"$SS_NAME" > /dev/null 2>&1
+    fi
+}
 # display screenshot; resize it first if it's too large to be displayed on user's screen
 function displayss() {
     . ~/.config/yadshot/yadshot.conf
@@ -229,85 +295,56 @@ function displayss() {
     WSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f2 -d" " | cut -f1 -d'.')
     HSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f4 -d" " | cut -f1 -d'.')
     if [ $WSCREEN_RES -le $WSIZE ] || [ $HSCREEN_RES -le $HSIZE ]; then
-        mv /tmp/"$SS_NAME" /tmp/"$SS_NAME"_ORIGINAL
-        if [ -f "$RUNNING_DIR/ImageMagick" ]; then
-            "$RUNNING_DIR"/ImageMagick convert -resize 50% /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
-        else
-            convert -resize 50% /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
-        fi
+        yad --window-icon="$ICON_PATH" --center --picture --size=fit --width=$WSCREEN_RES --height=$HSCREEN_RES --no-escape --filename="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" \
+        --button="Close"\!gtk-close:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0
+    else
+        yad --window-icon="$ICON_PATH" --center --picture --size=orig --no-escape --filename="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" \
+        --button="Close"\!gtk-close:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0
     fi
-    OUTPUT="$(yad --window-icon="$ICON_PATH" --center --form --always-print-result --no-escape --image="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" --columns="4" --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" --field="!gtk-color-picker!Color Picker":FBTN "yad --window-icon="$ICON_PATH" --color --center --title=yadshot" --button="Close"\!gtk-close:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0)"
     BUTTON_PRESSED="$?"
-    if [ -f /tmp/"$SS_NAME"_ORIGINAL ]; then
-        rm -f /tmp/"$SS_NAME"
-        mv /tmp/"$SS_NAME"_ORIGINAL /tmp/"$SS_NAME"
-    fi
     buttonpressed
 }
 # detect button pressed from displayss function and run relevant tasks
 function buttonpressed() {
     case $BUTTON_PRESSED in
         1)
-            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
-            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
-            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            yadshotsavesettings
             rm -f /tmp/"$SS_NAME"
             exit 0
             ;;
         2)
-            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
-            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
-            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            yadshotsavesettings
             "$YADSHOT_PATH"
             ;;
         3)
-            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
-            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
-            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            yadshotsavesettings
             xclip -selection clipboard -t image/png -i < /tmp/"$SS_NAME"
             displayss
             ;;
         4)
-            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
-            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
-            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            yadshotsavesettings
             cp /tmp/"$SS_NAME" $HOME/Pictures/"$SS_NAME"
             yadshotupload "$HOME/Pictures/$SS_NAME"
             displayss
             ;;
         5)
-            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
-            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
-            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            yadshotsavesettings
             SAVE_DIR=$(yad --window-icon="$ICON_PATH" --center --file --save --confirm-overwrite --title="yadshot" --width=800 --height=600 --text="Save $SS_NAME as...")
             cp /tmp/"$SS_NAME" "$SAVE_DIR"
             displayss
             ;;
         0)
             rm -f /tmp/"$SS_NAME"
-            SS_NAME="yadshot$(date +'%m-%d-%y-%l%M%p').png"
-            SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
-            DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
-            SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-            yadshotsavesettings
+            yadshotsettings
             "$YADSHOT_PATH" -c
             ;;
     esac
 }
 # upload paste from clipboard to paste.rs with optional syntax
 function yadshotpaste() {
-    PASTE_CONTENT="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=600 --width=800 --form --separator="" --borders="10" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1 \
-    --field="Paste":TXT "$(xclip -o -selection clipboard)")"
+    echo -e "$(xclip -o -selection clipboard)" > /tmp/yadshotpaste.txt
+    PASTE_CONTENT="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=600 --width=800 --text-info --filename="/tmp/yadshotpaste.txt" --editable --borders="10" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1)"
     case $? in
         0)
             echo -e "$PASTE_CONTENT" > /tmp/yadshotpaste.txt
             ;;
         *)
+            rm -f /tmp/yadshotpaste.txt
             exit 0
             ;;
     esac
@@ -326,6 +363,35 @@ function yadshotpaste() {
         yad --window-icon="$ICON_PATH" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="$PASTE_URL"
     fi
 }
+# get input from stdin and upload to paste.rs
+function yadshotpastepipe() {
+    cat - > /tmp/yadshotpaste.txt
+    [ -z "$PASTE_SYNTAX" ] && PASTE_SYNTAX=""
+    PASTE_URL="$(curl -s --data-binary @/tmp/yadshotpaste.txt https://paste.rs/ | head -n 1)$PASTE_SYNTAX"
+    rm -f /tmp/yadshotpaste.txt
+    if [[ ! "$PASTE_URL" =~ "http" ]]; then
+        yad --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
+        exit 1
+    else
+        echo -n "$PASTE_URL" | xclip -i -selection primary
+        echo -n "$PASTE_URL" | xclip -i -selection clipboard
+        echo "$PASTE_URL"
+        echo "$PASTE_URL" >> ~/.teknik
+        yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="$PASTE_URL"
+    fi
+}
+# select a file to upload to teknik.io
+function yadshotfileselect() {
+    FILE="$(yad --window-icon="$ICON_PATH" --file $PWD --center --title=yadshot --height 600 --width 800)"
+    case $? in
+        0)
+            yadshotupload "$FILE"
+            ;;
+        *)
+            exit 0
+            ;;
+    esac
+}
 # main yadshot window with screenshot options and dropdown menu
 function startfunc() {
     yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=200 --width=325 --form --no-escape --separator="" --button-layout="center" \
@@ -336,7 +402,7 @@ function startfunc() {
     case $? in
         0)
             yadshotsettings
-            yadshotcapture
+            yadshotcaptureselect
             displayss
             exit 0
             ;;
@@ -347,7 +413,7 @@ function startfunc() {
 }
 # help function
 function yadshothelp() {
-printf '%s\n' "yadshot v0.1.99.2
+printf '%s\n' "yadshot v0.2.0
 yadshot provides a GUI frontend for taking screenshots with ImageMagick/slop.
 yadshot can upload screenshots and files to teknik.io, and it can also upload
 pastes to paste.rs
@@ -392,46 +458,24 @@ case $1 in
             esac
         done
         if readlink /proc/$$/fd/0 | grep -q "^pipe:"; then
-            while IFS= read line; do
-                echo -e "$line"
-            done > /tmp/yadshotpaste.txt
-            [ -z "$PASTE_SYNTAX" ] && PASTE_SYNTAX=""
-            PASTE_URL="$(curl -s --data-binary @/tmp/yadshotpaste.txt https://paste.rs/ | head -n 1)$PASTE_SYNTAX"
-            rm -f /tmp/yadshotpaste.txt
-            if [[ ! "$PASTE_URL" =~ "http" ]]; then
-                yad --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
-                exit 1
-            else
-                echo -n "$PASTE_URL" | xclip -i -selection primary
-                echo -n "$PASTE_URL" | xclip -i -selection clipboard
-                echo "$PASTE_URL"
-                echo "$PASTE_URL" >> ~/.teknik
-                yad --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="$PASTE_URL"
-            fi
+            yadshotpastepipe
         else
             yadshotpaste
             exit 0
         fi
         ;;
     -f|--file)
-        FILE="$(yad --window-icon="$ICON_PATH" --file $PWD --center --title=yadshot --height 600 --width 800)"
-        case $? in
-            0)
-                yadshotupload "$FILE"
-                ;;
-            *)
-                exit 0
-                ;;
-        esac
+        yadshotfileselect
+        exit 0
         ;;
     -s|--settings)
         yadshotsettings
-        yadshotcapture
+        yadshotcaptureselect
         displayss
         exit 0
         ;;
     -c|--capture)
-        yadshotcapture
+        yadshotcaptureselect
         displayss
         exit 0
         ;;
@@ -441,6 +485,7 @@ case $1 in
         ;;
     -t|--tray)
         bash -c 'yadshottray'
+        exit 0
         ;;
     *)
         startfunc
