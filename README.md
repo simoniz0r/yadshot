@@ -1,6 +1,6 @@
 # yadshot
 
-yadshot uses ImageMagick/slop to take screenshots.  yadshot can upload screenshots and files to https://teknik.io, and it can also upload pastes to https://paste.rs
+yadshot uses ImageMagick or ffmpeg and slop to take screenshots.  yadshot can upload screenshots and files to https://teknik.io, and it can also upload pastes to https://paste.rs
 
 Arguments:
 
@@ -23,7 +23,7 @@ If no argument is passed, yadshot's main menu will be shown.
 
 ```
 
-Dependencies: slop, imagemagick, yad, xclip, curl
+Dependencies: slop, imagemagick or ffmpeg, yad, xclip, curl
 
 Main Window:
 
