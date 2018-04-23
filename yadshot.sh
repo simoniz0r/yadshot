@@ -116,7 +116,7 @@ function yadshotcolor() {
 export -f yadshotcolor
 # function to view upload list from tray
 function upload_list() {
-    LIST_ITEM="$(yad --window-icon="$ICON_PATH" --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-cancel:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
+    LIST_ITEM="$(yad --window-icon="$ICON_PATH" --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button="Close"\!gtk-cancel:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
     case $? in
         2)
             sleep 0
@@ -340,7 +340,7 @@ function buttonpressed() {
 # upload paste from clipboard to paste.rs with optional syntax
 function yadshotpaste() {
     echo -e "$(xclip -o -selection clipboard)" > /tmp/yadshotpaste.txt
-    PASTE_CONTENT="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=600 --width=800 --text-info --filename="/tmp/yadshotpaste.txt" --editable --borders="10" --button="Ok"\!gtk-ok --button="Cancel"\!gtk-cancel:1)"
+    PASTE_CONTENT="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=600 --width=800 --text-info --filename="/tmp/yadshotpaste.txt" --editable --borders="10" --button="Cancel"\!gtk-cancel:1 --button="Ok"\!gtk-ok:0)"
     case $? in
         0)
             echo -e "$PASTE_CONTENT" > /tmp/yadshotpaste.txt
@@ -394,7 +394,7 @@ function yadshotfileselect() {
             ;;
     esac
 }
-# main yadshot window with screenshot options and dropdown menu
+# main yadshot window
 function startfunc() {
     yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=200 --width=325 --form --no-escape --separator="" --button-layout="center" \
     --borders="20" --columns="1" --button="New Screenshot"\!gtk-add:0 --button="Close"\!gtk-cancel:1 \
@@ -486,7 +486,7 @@ case $1 in
         exit 0
         ;;
     -t|--tray)
-        bash -c 'yadshottray'
+        yadshottray &
         exit 0
         ;;
     *)
