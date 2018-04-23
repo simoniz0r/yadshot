@@ -116,7 +116,7 @@ function yadshotcolor() {
 export -f yadshotcolor
 # function to view upload list from tray
 function upload_list() {
-    LIST_ITEM="$(yad --window-icon="$ICON_PATH" --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-close:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
+    LIST_ITEM="$(yad --window-icon="$ICON_PATH" --center --list --height 600 --width 800 --title="yadshot" --separator="" --column="Uploads" --button=gtk-cancel:2 --button="Delete list"\!gtk-delete:1 --button=gtk-copy:0 --rest="$HOME/.teknik")"
     case $? in
         2)
             sleep 0
@@ -143,7 +143,7 @@ function yadshottray() {
     # attach a file descriptor to the file
     exec 3<> $PIPE
     yad --window-icon="$ICON_PATH" --notification --listen --image="$ICON_PATH" --text="yadshot" --command="bash -c on_click" --item-separator="," \
-    --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|Color Picker,bash -c yadshotcolor,gtk-color-picker|View Upload List,bash -c upload_list,gtk-edit|Quit,quit,gtk-close" <&3
+    --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|Color Picker,bash -c yadshotcolor,gtk-color-picker|View Upload List,bash -c upload_list,gtk-edit|Quit,quit,gtk-cancel" <&3
 }
 export -f yadshottray
 # save settings to yadshot config dir
@@ -193,7 +193,7 @@ function yadshotupload() {
             echo -n "$FILE_URL" | xclip -selection primary
             echo -n "$FILE_URL" | xclip -selection clipboard
             echo "$FILE_URL" >> ~/.teknik
-            yad --window-icon="$ICON_PATH" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button="Back"\!gtk-ok:0 --button="Close"\!gtk-close:1 --text="$FILE_URL"
+            yad --window-icon="$ICON_PATH" --center --height=150 --borders=10 --info --selectable-labels --title="yadshot" --button="Back"\!gtk-ok:0 --button="Close"\!gtk-cancel:1 --text="$FILE_URL"
             case $? in
                 1)
                     rm -f /tmp/"$SS_NAME"
@@ -298,10 +298,10 @@ function displayss() {
     HSIZEYAD=$(($HSIZE+75))
     if [ $WSCREEN_RES -le $WSIZE ] || [ $HSCREEN_RES -le $HSIZE ]; then
         yad --window-icon="$ICON_PATH" --center --picture --size=fit --width=$WSCREEN_RES --height=$HSCREEN_RES --no-escape --filename="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" \
-        --button="Close"\!gtk-close:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0
+        --button="Close"\!gtk-cancel:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0
     else
         yad --window-icon="$ICON_PATH" --center --picture --size=orig --width=$WSIZEYAD --height=$HSIZEYAD --no-escape --filename="/tmp/$SS_NAME" --image-on-top --buttons-layout="edge" --title="yadshot" --separator="," --borders="10" \
-        --button="Close"\!gtk-close:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0
+        --button="Close"\!gtk-cancel:1 --button="Main Menu"\!gtk-home:2 --button="Copy to Clipboard"\!gtk-paste:3 --button="Upload to Teknik"\!gtk-go-up:4 --button=gtk-save:5 --button="New Screenshot"\!gtk-new:0
     fi
     BUTTON_PRESSED="$?"
     buttonpressed
