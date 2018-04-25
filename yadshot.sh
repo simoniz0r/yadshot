@@ -8,8 +8,8 @@
 # export running directory variables for use later
 export YADSHOT_PATH="$(readlink -f $0)"
 export RUNNING_DIR="$(dirname $(readlink -f $0))"
-if [ -f "/usr/share/icons/hicolor/scalable/apps/yadshot.svg" ]; then
-    export ICON_PATH="/usr/share/icons/hicolor/scalable/apps/yadshot.svg"
+if [ -f "/usr/share/icons/hicolor/64x64/apps/yadshot.png" ]; then
+    export ICON_PATH="/usr/share/icons/hicolor/64x64/apps/yadshot.png"
 else
     export ICON_PATH="gtk-fullscreen"
 fi

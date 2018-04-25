@@ -13,7 +13,7 @@ install:
 		@chmod +x yadshot.sh
 		@cp -p yadshot.sh $(DESTDIR)$(PREFIX)/bin/yadshot
 		@cp -p yadshot.desktop $(DESTDIR)$(PREFIX)/share/applications/yadshot.desktop
-		@cp -p yadshot.svg $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/yadshot.svg
+		@cp -p yadshot.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/64x64/apps/yadshot.png
 		@echo 'yadshot installed!'
 
 uninstall:
