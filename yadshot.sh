@@ -157,16 +157,18 @@ export -f yadshotsavesettings
 # change yadshot's settings
 function yadshotsettings() {
     . ~/.config/yadshot/yadshot.conf
-    YSHOT_PLUGIN_LIST="$(dir -C -w 1 $HOME/.config/yadshot/plugins | tr '\n' '!')"
-    if type import >/dev/null 2>&1 || [ -f "$RUNNING_DIR/ImageMagick" ]; then
-        YSHOT_PLUGIN_LIST="ImageMagick!$YSHOT_PLUGIN_LIST"
+    if [ $(dir -C -w 1 $HOME/.config/yadshot/plugins | wc -l) -gt 0 ]; then
+        YSHOT_PLUGIN_LIST="$(dir -C -w 1 $HOME/.config/yadshot/plugins | tr '\n' ',' | rev | cut -f2- -d',' | rev)"
     fi
     if type ffmpeg >/dev/null 2>&1; then
-        YSHOT_PLUGIN_LIST="ffmpeg!$YSHOT_PLUGIN_LIST"
+        YSHOT_PLUGIN_LIST="ffmpeg,$YSHOT_PLUGIN_LIST"
     fi
-    YSHOT_PLUGIN_LIST="$(echo $YSHOT_PLUGIN_LIST | tr '!' '\n' | grep -v "$YSHOT_IMAGE_PLUGIN" | tr '!' '\n' | rev | cut -f2- -d'!' | rev)"
-    YSHOT_PLUGIN_LIST="$YSHOT_IMAGE_PLUGIN!$YSHOT_PLUGIN_LIST"
-    OUTPUT="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=200 --columns=1 --form --no-escape --separator="," --borders="10" \
+    if type import >/dev/null 2>&1 || [ -f "$RUNNING_DIR/ImageMagick" ]; then
+        YSHOT_PLUGIN_LIST="ImageMagick,$YSHOT_PLUGIN_LIST"
+    fi
+    YSHOT_PLUGIN_LIST="$(echo $YSHOT_PLUGIN_LIST | tr ',' '\n' | grep -vw "$YSHOT_IMAGE_PLUGIN" | sed '/^$/d' | tr '\n' ',')"
+    YSHOT_PLUGIN_LIST="$(echo $YSHOT_IMAGE_PLUGIN,$YSHOT_PLUGIN_LIST | rev | cut -f2- -d',' | rev)"
+    OUTPUT="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=200 --columns=1 --form --no-escape --item-separator="," --separator="," --borders="10" \
     --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" \
     --field="Image capture plugin":CB "$YSHOT_PLUGIN_LIST" --button="gtk-ok")"
     SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
