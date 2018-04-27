@@ -280,11 +280,23 @@ function yadshotcaptureffmpeg() {
         H=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" ")
         ffmpeg -f x11grab -s "$W"x"$H" -i :0.0 -vframes 1 /tmp/"$SS_NAME" > /dev/null 2>&1
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "TRUE" ]; then
-        read -r X Y W H G ID < <(slop --nokeyboard -lc 0,119,255,0.34 -f "%x %y %w %h %g %i")
+        MAXW=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" ")
+        MAXH=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" ")
+        read -r X Y W H G ID < <(slop --nokeyboard -c 0,119,255,0.34 -f "%x %y %w %h %g %i")
+        [ $W -gt $MAXW ] && W=$MAXW
+        [ $H -gt $MAXH ] && H=$MAXH
+        [ $X -gt $MAXW ] && X=$MAXW
+        [ $Y -gt $MAXH ] && Y=$MAXH
         sleep "$SS_DELAY"
         ffmpeg -f x11grab -s "$W"x"$H" -i :0.0+$X,$Y -vframes 1 /tmp/"$SS_NAME" > /dev/null 2>&1
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ]; then
-        read -r X Y W H G ID < <(slop --nokeyboard -nlc 0,119,255,0.34 -f "%x %y %w %h %g %i")
+        MAXW=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" ")
+        MAXH=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" ")
+        read -r X Y W H G ID < <(slop --nokeyboard -nc 0,119,255,0.34 -f "%x %y %w %h %g %i")
+        [ $W -gt $MAXW ] && W=$MAXW
+        [ $H -gt $MAXH ] && H=$MAXH
+        [ $X -gt $MAXW ] && X=$MAXW
+        [ $Y -gt $MAXH ] && Y=$MAXH
         sleep "$SS_DELAY"
         ffmpeg -f x11grab -s "$W"x"$H" -i :0.0+$X,$Y -vframes 1 /tmp/"$SS_NAME" > /dev/null 2>&1
     fi
@@ -417,7 +429,7 @@ function startfunc() {
 }
 # help function
 function yadshothelp() {
-printf '%s\n' "yadshot v0.2.00
+printf '%s\n' "yadshot v0.2.02
 yadshot provides a GUI frontend for taking screenshots with ImageMagick/slop.
 yadshot can upload screenshots and files to teknik.io, and it can also upload
 pastes to paste.rs
