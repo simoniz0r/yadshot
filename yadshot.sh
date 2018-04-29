@@ -142,7 +142,7 @@ function yadshottray() {
     mkfifo $PIPE
     # attach a file descriptor to the file
     exec 3<> $PIPE
-    yad --window-icon="$ICON_PATH" --notification --listen --image="$ICON_PATH" --text="yadshot" --command="bash -c on_click" --item-separator="," \
+    yad --window-icon="gtk-zoom-fit" --notification --listen --image="gtk-zoom-fit" --text="yadshot" --command="bash -c on_click" --item-separator="," \
     --menu="New Screenshot,bash -c yadshot_capture,gtk-new|Upload File,bash -c teknik_file,gtk-go-up|Upload Paste,bash -c teknik_paste,gtk-copy|Color Picker,bash -c yadshotcolor,gtk-color-picker|View Upload List,bash -c upload_list,gtk-edit|Quit,quit,gtk-cancel" <&3
 }
 export -f yadshottray
