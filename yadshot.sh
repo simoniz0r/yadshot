@@ -3,7 +3,7 @@
 # Author: simoniz0r
 # Description: Uses yad to provide a simple GUI for using slop to capture screenshots using Imagemagick's import
 # License: GPL v2 Only
-# Dependencies: coreutils, slop, imagemagick, yad, xclip, curl
+# Dependencies: coreutils, slop, imagemagick, yad, xclip, curl, grabc (optional - for use with color picker)
 
 # export running directory variables for use later
 export YADSHOT_PATH="$(readlink -f $0)"
@@ -102,7 +102,11 @@ function yadshot_capture() {
 export -f yadshot_capture
 # function for launching color picker from tray
 function yadshotcolor() {
-    COLOR_SELECTION="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --color)"
+    if type grabc > /dev/null 2>&1; then
+        COLOR_SELECTION="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --color --init-color="$(grabc | head -n 1)" --mode=hex)"
+    else
+        COLOR_SELECTION="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --color --mode=hex)"
+    fi
     case $? in
         0)
             echo -n "$COLOR_SELECTION" | xclip -i -selection clipboard

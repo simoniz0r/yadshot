@@ -25,7 +25,7 @@ If no argument is passed, yadshot's main menu will be shown.
 
 ```
 
-Dependencies: slop, imagemagick or ffmpeg, yad, xclip, curl
+Dependencies: slop, imagemagick or ffmpeg, yad, xclip, curl, grabc (optional - for use with color picker)
 
 Main Window:
 
