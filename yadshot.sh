@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 # Title: yadshot
 # Author: simoniz0r
 # Description: Uses yad to provide a simple GUI for using slop to capture screenshots using Imagemagick's import
