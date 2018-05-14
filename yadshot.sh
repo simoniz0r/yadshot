@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # Title: yadshot
 # Author: simoniz0r
 # Description: Uses yad to provide a simple GUI for using slop to capture screenshots using Imagemagick's import
@@ -255,7 +255,7 @@ function yadshotcapture() {
             import -window root /tmp/"$SS_NAME"
         fi
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "TRUE" ]; then
-        read -r G < <(slop --nokeyboard -lc 0,119,255,0.34 -f "%g")
+        read -r G < <(slop --nokeyboard -c 0,119,255,0.34 -f "%g")
         sleep "$SS_DELAY"
         if [ -f "$RUNNING_DIR/ImageMagick" ]; then
             "$RUNNING_DIR"/ImageMagick import -window root -crop $G /tmp/"$SS_NAME"
@@ -263,7 +263,7 @@ function yadshotcapture() {
             import -window root -crop $G /tmp/"$SS_NAME"
         fi
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ]; then
-        read -r G < <(slop --nokeyboard -nlc 0,119,255,0.34 -f "%g")
+        read -r G < <(slop --nokeyboard -nc 0,119,255,0.34 -f "%g")
         sleep "$SS_DELAY"
         if [ -f "$RUNNING_DIR/ImageMagick" ]; then
             "$RUNNING_DIR"/ImageMagick import -window root -crop $G /tmp/"$SS_NAME"
@@ -287,12 +287,13 @@ function yadshotcaptureffmpeg() {
         MAXW=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" ")
         MAXH=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" ")
         read -r X Y W H G ID < <(slop --nokeyboard -c 0,119,255,0.34 -f "%x %y %w %h %g %i")
+        [ $W -eq 1921 ] && W=1920
         [ $W -gt $MAXW ] && W=$MAXW
         [ $H -gt $MAXH ] && H=$MAXH
         [ $X -gt $MAXW ] && X=$MAXW
         [ $Y -gt $MAXH ] && Y=$MAXH
         sleep "$SS_DELAY"
-        ffmpeg -f x11grab -s "$W"x"$H" -i :0.0+$X,$Y -vframes 1 /tmp/"$SS_NAME" > /dev/null 2>&1
+        ffmpeg -f x11grab -s "$W"x"$H" -i :0.0+$X,$Y -vframes 1 /tmp/"$SS_NAME" # > /dev/null 2>&1
     elif [ "$SELECTION" = "TRUE" ] && [ "$DECORATIONS" = "FALSE" ]; then
         MAXW=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" ")
         MAXH=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" ")
@@ -308,6 +309,10 @@ function yadshotcaptureffmpeg() {
 # display screenshot; resize it first if it's too large to be displayed on user's screen
 function displayss() {
     . ~/.config/yadshot/yadshot.conf
+    if [ ! -f "/tmp/$SS_NAME" ]; then
+        yad --window-icon="$ICON_PATH" --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to capture screenshot!"
+        exit 1
+    fi
     WSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" " | awk '{print $1 * .75}' | cut -f1 -d'.')
     HSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" " | awk '{print $1 * .75}' | cut -f1 -d'.')
     WSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f2 -d" " | cut -f1 -d'.')
@@ -433,7 +438,7 @@ function startfunc() {
 }
 # help function
 function yadshothelp() {
-printf '%s\n' "yadshot v0.2.02
+printf '%s\n' "yadshot v0.2.03
 yadshot provides a GUI frontend for taking screenshots with ImageMagick/slop.
 yadshot can upload screenshots and files to teknik.io, and it can also upload
 pastes to paste.rs
