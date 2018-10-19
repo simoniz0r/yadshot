@@ -161,8 +161,8 @@ export -f yadshotsavesettings
 # change yadshot's settings
 function yadshotsettings() {
     . ~/.config/yadshot/yadshot.conf
-    if [ $(dir -C -w 1 $HOME/.config/yadshot/plugins | wc -l) -gt 0 ]; then
-        YSHOT_PLUGIN_LIST="$(dir -C -w 1 $HOME/.config/yadshot/plugins | tr '\n' ',' | rev | cut -f2- -d',' | rev)"
+    if [ $(ls -C -w 1 $HOME/.config/yadshot/plugins | wc -l) -gt 0 ]; then
+        YSHOT_PLUGIN_LIST="$(ls -C -w 1 $HOME/.config/yadshot/plugins | tr '\n' ',' | rev | cut -f2- -d',' | rev)"
     fi
     if type ffmpeg >/dev/null 2>&1; then
         YSHOT_PLUGIN_LIST="ffmpeg,$YSHOT_PLUGIN_LIST"
