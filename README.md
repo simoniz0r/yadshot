@@ -18,7 +18,7 @@ To uninstall yadshot, just `cd` back into the cloned git directory and run `sudo
 
 ```
 cd ./yadshot
-sudo make install
+sudo make uninstall
 ```
 
 # About
