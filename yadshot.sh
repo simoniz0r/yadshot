@@ -355,6 +355,7 @@ function yadshotpaste() {
             exit 0
             ;;
     esac
+    echo -n "" | xclip -i -selection clipboard
     "$RUNNING_DIR"/filebiner up -f /tmp/yadshotpaste.txt
     PASTE_URL="$(xclip -o -selection clipboard)"
     rm -f /tmp/yadshotpaste.txt
@@ -368,6 +369,7 @@ function yadshotpaste() {
 # get input from stdin and upload to Filebin.net
 function yadshotpastepipe() {
     cat - > /tmp/yadshotpaste.txt
+    echo -n "" | xclip -i -selection clipboard
     "$RUNNING_DIR"/filebiner up -f /tmp/yadshotpaste.txt
     PASTE_URL="$(xclip -o -selection clipboard)"
     rm -f /tmp/yadshotpaste.txt
@@ -411,7 +413,7 @@ function startfunc() {
 }
 # help function
 function yadshothelp() {
-printf '%s\n' "yadshot v0.2.03
+printf '%s\n' "yadshot v0.2.04
 yadshot provides a GUI frontend for taking screenshots with 
 ImageMagick/slop or ffmpeg/slop. yadshot can upload screenshots,
 files, and pastes to Filebin.net.
