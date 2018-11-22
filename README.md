@@ -4,6 +4,8 @@ yadshot uses ImageMagick or ffmpeg and slop to take screenshots.  yadshot can up
 
 # Install/Uninstall
 
+Dependencies: slop, imagemagick or ffmpeg, yad, xclip, curl, grabc (optional - for use with color picker)
+
 To install yadshot just clone this repo, `cd` into the cloned git directory, and run `sudo make install` as shown below:
 
 ```
@@ -43,8 +45,6 @@ Arguments:
 If no argument is passed, yadshot's main menu will be shown.
 
 ```
-
-Dependencies: slop, imagemagick or ffmpeg, yad, xclip, curl, grabc (optional - for use with color picker)
 
 Main Window:
 
