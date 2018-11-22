@@ -184,6 +184,7 @@ function yadshotsettings() {
 export -f yadshotsettings
 # upload screenshots and files to Filebin.net; set FAILED=1 if upload fails
 function yadshotupload() {
+    echo -n "" | xclip -i -selection clipboard
     "$RUNNING_DIR"/filebiner up -f "$1"
     FILE_URL="$(xclip -o -selection clipboard)"
     echo "$FILE_URL"
