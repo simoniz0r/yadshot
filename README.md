@@ -2,6 +2,25 @@
 
 yadshot uses ImageMagick or ffmpeg and slop to take screenshots.  yadshot can upload screenshots, files, and pastes to https://Filebin.net.
 
+# Install/Uninstall
+
+To install yadshot just clone this repo, `cd` into the cloned git directory, and run `sudo make install` as shown below:
+
+```
+git clone https://github.com/simoniz0r/yadshot.git
+cd ./yadshot
+sudo make install
+```
+
+To uninstall yadshot, just `cd` back into the cloned git directory and run `sudo make uninstall` as shown below:
+
+```
+cd ./yadshot
+sudo make install
+```
+
+# About
+
 Arguments:
 
 ```
