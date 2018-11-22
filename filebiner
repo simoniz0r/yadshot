@@ -1,0 +1,291 @@
+#!/bin/bash
+# Name: filebiner
+# Description: Uploads and manages files on https://filebin.net
+# License: MIT
+# Dependencies: curl
+
+# check if $1 exists; exit if it doesn't
+argcheck() {
+    if [[ -z "$1" ]]; then
+        echo "Missing required input!"
+        exit 1
+    fi
+}
+# upload file to filebin.net
+uploadfile() {
+    # make sure arguments passed
+    argcheck "$@"
+    # run a for loop to detect arguments
+    for UPARG in "$@"; do
+        case "$UPARG" in
+            # set bin name (optional; username will be used otherwise)
+            -b|--bin) shift; BIN_NAME="$1"; shift;;
+            # set file name (optional; actual file name will be used otherwise)
+            -n|--name) shift; FILE_NAME="$1"; shift;;
+            # set upload file
+            -f|--file) shift; UPLOAD_FILE="$1"; shift;;
+        esac
+    done
+    argcheck "$UPLOAD_FILE"
+    if [[ ! "$UPLOAD_FILE" == "-" ]]; then
+        # use readlink -f to find full path of UPLOAD_FILE
+        UPLOAD_FILE="$(readlink -f "$UPLOAD_FILE")"
+    else
+        rm -f /tmp/.filebinerpipe8845
+        UPLOAD_FILE="/tmp/.filebinerpipe8845"
+        # get rid of ascii escapes when reading fron stdin
+        cat | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" > /tmp/.filebinerpipe8845
+    fi
+    # exit if file doesn't exist
+    if [[ ! -f "$UPLOAD_FILE" ]]; then
+        echo "$UPLOAD_FILE not found!"
+        exit 1
+    fi
+    # set BIN_NAME to $USER if empty
+    if [[ -z "$BIN_NAME" ]]; then
+        BIN_NAME="$USER"
+        # if $USER isn't 8 characters, add 7 characters to it to make sure it's long enough
+        if [[ $(echo "$BIN_NAME" | wc -m) -lt 9 ]]; then
+            BIN_NAME="$USER-uploads"
+        fi
+    fi
+    if [[ $(echo "$BIN_NAME" | wc -m) -lt 9 ]]; then
+        echo "Error using '$BIN_NAME' as bin name; bin name must be at least 8 characters in length."
+        rm -f /tmp/.filebinerpipe8845
+        exit 1
+    fi
+    # if text being uploaded via pipe and FILE_NAME is empty, set random file name
+    if [[  "$UPLOAD_FILE" == "-" ]] && [[ -z "$FILE_NAME" ]]; then
+        FILE_NAME="$(date +%s).txt"
+    # else get file name using rev and cut if FILE_NAME is empty
+    elif [[ -z "$FILE_NAME" ]]; then
+            FILE_NAME="$(echo "$UPLOAD_FILE" | rev | cut -f1 -d'/' | rev)"
+    fi
+    # upload UPLOAD_FILE to filebin.net
+    curl -s --data-binary "@$UPLOAD_FILE" -H "bin: $BIN_NAME" -H "filename: $FILE_NAME" https://filebin.net 2>&1 > /dev/null || { echo "Failed to upload $UPLOAD_FILE"; rm -f /tmp/.filebinerpipe8845; exit 1; }
+    rm -f /tmp/.filebinerpipe8845
+    # find url of uploaded file using filebin.net's list of uploads to BIN_NAME
+    UP_URL="$(curl -s -H "Accept: application/json" https://filebin.net/"$BIN_NAME" | grep ""$BIN_NAME"/"$FILE_NAME"" | cut -f4 -d'"' | head -n 1)"
+    if [[ -z "$UP_URL" ]]; then
+        echo "Failed to upload $UPLOAD_FILE"
+        exit 1
+    else
+        echo "url: $UP_URL"
+        if type xclip > /dev/null 2>&1; then
+            echo -n "$UP_URL" | xclip -i -selection clipboard
+        fi
+    fi
+    exit 0
+}
+# list all files in a bin on filebin.net
+listfiles() {
+    # run for loop to detect arguments
+    SHOW_NAMES="FALSE"
+    for LSARG in "$@"; do
+        case "$LSARG" in
+            # set bin name (optional; username will be used otherwise)
+            -b|--bin) shift; BIN_NAME="$1"; shift;;
+            # show files by name instead of full url
+            -n|--names) shift; SHOW_NAMES="TRUE";;
+        esac
+    done
+    if [[ -z "$BIN_NAME" ]]; then
+        BIN_NAME="$USER"
+    fi
+    if [[ $(echo "$BIN_NAME" | wc -m) -lt 9 ]]; then
+        echo "Error using '$BIN_NAME' as bin name; bin name must be at least 8 characters in length."
+        exit 1
+    fi
+    # use curl to get list, grep to find file urls, and cut to get rid of extra junk
+    echo "Files in '$BIN_NAME' bin:"
+    if [[ "$SHOW_NAMES" == "TRUE" ]]; then
+        curl -s -H "Accept: application/json" https://filebin.net/"$BIN_NAME" | grep '?t=' | cut -f4 -d'"' | rev | cut -f1 -d'/' | cut -f2- -d'?' | rev
+    else
+        curl -s -H "Accept: application/json" https://filebin.net/"$BIN_NAME" | grep '?t=' | cut -f4 -d'"'
+    fi
+    exit 0
+}
+# download a file or all files from a bin on filebin.net
+downloadfile() {
+    if [[ "$1" == "--all" ]] || [[ "$1" == "-a" ]]; then
+        shift
+        downloadall "$@"
+    else
+        for DLARG in "$@"; do
+            case "$DLARG" in
+                # set bin name (optional; username will be used otherwise)
+                -b|--bin) shift; BIN_NAME="$1"; shift;;
+                # set file to download (required)
+                -n|--name) shift; FILE_NAME="$1"; shift;;
+                # set file name (optional; actual file name will be used otherwise)
+                -o|--output) shift; SAVE_NAME="$1"; shift;;
+            esac
+        done
+        argcheck "$FILE_NAME"
+        # set BIN_NAME to $USER if empty
+        if [[ -z "$BIN_NAME" ]]; then
+            BIN_NAME="$USER"
+            # if $USER isn't 8 characters, add 7 characters to it to make sure it's long enough
+            if [[ $(echo "$BIN_NAME" | wc -m) -lt 9 ]]; then
+                BIN_NAME="$USER-uploads"
+            fi
+        fi
+        if [[ $(echo "$BIN_NAME" | wc -m) -lt 9 ]]; then
+            echo "Error using '$BIN_NAME' as bin name; bin name must be at least 8 characters in length."
+            exit 1
+        fi
+        # set SAVE_NAME to ~/Downloads/$FILE_NAME if empty
+        if [[ -z "$SAVE_NAME" ]]; then
+            SAVE_NAME="$HOME/Downloads/$FILE_NAME"
+        else
+            SAVE_NAME="$(readlink -f "$SAVE_NAME")"
+        fi
+        FILE_URL="$(curl -s -H "Accept: application/json" https://filebin.net/"$BIN_NAME" | grep ""$BIN_NAME"/"$FILE_NAME"" | cut -f4 -d'"' | head -n 1)"
+        curl -o "$SAVE_NAME" "$FILE_URL" || { echo "Failed to download '$FILE_NAME' from '$BIN_NAME' bin!'"; exit 1; }
+        echo "'$FILE_NAME' downloaded to '$SAVE_NAME'"
+    fi
+    exit 0
+}
+# download all files from a bin on filebin.net
+downloadall() {
+    for DLAARG in "$@"; do
+        case "$DLAARG" in
+            # set bin name (optional; username will be used otherwise)
+            -b|--bin) shift; BIN_NAME="$1"; shift;;
+            # set file name (optional; actual file name will be used otherwise)
+            -o|--output) shift; FILE_NAME="$1"; shift;;
+        esac
+    done
+    # set BIN_NAME to $USER if empty
+    if [[ -z "$BIN_NAME" ]]; then
+        BIN_NAME="$USER"
+        # if $USER isn't 8 characters, add 7 characters to it to make sure it's long enough
+        if [[ $(echo "$BIN_NAME" | wc -m) -lt 9 ]]; then
+            BIN_NAME="$USER-uploads"
+        fi
+    fi
+    if [[ $(echo "$BIN_NAME" | wc -m) -lt 9 ]]; then
+        echo "Error using '$BIN_NAME' as bin name; bin name must be at least 8 characters in length."
+        exit 1
+    fi
+    # set FILE_NAME to $USER if empty
+    if [[ -z "$FILE_NAME" ]]; then
+        FILE_NAME="$HOME/Downloads/$USER.tar"
+    # else find real path of input
+    else
+        FILE_NAME="$(readlink -f "$FILE_NAME")"
+    fi
+    # exit if directory doesn't exist
+    if [[ ! -d "$(dirname "$FILE_NAME")" ]]; then
+        echo "Directory '$(dirname "$FILE_NAME")' does not exist!"
+        exit 1
+    fi
+    # add tar extension if missing
+    if [[ ! "$FILE_NAME" =~ ".tar" ]]; then
+        FILE_NAME=""$FILE_NAME".tar"
+    fi
+    # get temp key for downloading archive
+    TEMP_KEY="$(curl -s https://filebin.net/archive/"$BIN_NAME"/tar | grep '?t' | cut -f2 -d'"')"
+    if [[ -z "$TEMP_KEY" ]]; then
+        echo "Failed to download 'https://filebin.net/$BIN_NAME'"
+        exit 1
+    fi
+    # download using temp key with curl
+    curl -o "$FILE_NAME" https://filebin.net/archive/"$BIN_NAME"/tar"$TEMP_KEY" || { echo "Failed to download 'https://filebin.net/$BIN_NAME'"; exit 1; }
+    echo "$BIN_NAME saved to $FILE_NAME"
+    exit 0
+}
+# delete a file from filebin.net
+deletefile() {
+    # make sure arguments passed
+    argcheck "$@"
+    # run a for loop to detect arguments
+    for RMARG in "$@"; do
+        case "$RMARG" in
+            # set bin name (optional; username will be used otherwise)
+            -b|--bin) shift; BIN_NAME="$1"; shift;;
+            # set file name
+            -n|--name) shift; FILE_NAME="$1"; shift;;
+        esac
+    done
+    # exit if FILE_NAME empty
+    argcheck "$FILE_NAME"
+    # set BIN_NAME to $USER if empty
+    if [[ -z "$BIN_NAME" ]]; then
+        BIN_NAME="$USER"
+        # if $USER isn't 8 characters, add 7 characters to it to make sure it's long enough
+        if [[ $(echo "$BIN_NAME" | wc -m) -lt 9 ]]; then
+            BIN_NAME="$USER-uploads"
+        fi
+    fi
+    if [[ $(echo "$BIN_NAME" | wc -m) -lt 9 ]]; then
+        echo "Error using '$BIN_NAME' as bin name; bin name must be at least 8 characters in length."
+        exit 1
+    fi
+    # ask if sure about deleting file if -y or --yes not passed
+    if [[ "$YES_TO_ALL" == "FALSE" ]]; then
+        echo "NOTE: Please only delete files you own!"
+        read -p "Delete '$FILE_NAME' in '$BIN_NAME' bin? Y/N (Y): " DELETE_ANSWER
+        case "$DELETE_ANSWER" in
+            N*|n*) echo "'$FILE_NAME' was not deleted from '$BIN_NAME' bin."; exit 0;;
+        esac
+    fi
+    curl -s -X DELETE https://filebin.net/"$BIN_NAME"/"$FILE_NAME" || { echo "Failed to delete '$FILE_NAME' from '$BIN_NAME' bin!"; exit 1; }
+    exit 0
+}
+# show filebiner help
+filebinerhelp() {
+printf "filebiner v0.0.4 - https://www.simonizor.net
+Uploads and manages files on https://filebin.net
+
+Usage: filebiner <argument> [subarguments]
+
+Arguments:
+
+upload, up          Upload a file to filebin.net
+    Subarguments:
+    --bin, -b       The bin name to use (optional; defaults to '$USER')
+    --name, -n      The name of the file (optional; defaults to name of file being uploaded)
+    --file, -f      The path of the file being uploaded (required)
+    Ex: 'filebiner upload --file ~/filename.extension --bin mybin --name myfile.extension'
+
+list, ls            List files in a bin on filebin.net
+    Subarguments:
+    --bin, -b       The bin name to use (optional; defaults to '$USER')
+    --names, -n     Show files by names instead of full urls (optional)
+    Ex: 'filebiner list --bin mybin --names'
+
+download, dl        Download a file from filebin.net
+    Subarguments:
+    --bin, -b       The bin name to use (optional; defaults to '$USER')
+    --all, -a       Download all files in specified bin to a tar archive
+    --name, -n      The name of the file to download (required unless --all used)
+    --output, -o    The path and filename to save the file as (optional; defaults to ~/Downloads/<name of file>)
+    Ex: 'filebiner download --bin mybin --name myfile.extension'
+
+remove, rm          Remove a file from a bin on filebin.net
+    Subarguments:
+    --bin, -b       The bin name to use (optional; defaults to '$USER')
+    --name, -n      The name of the file to remove (required)
+    Ex: 'filebiner remove --bin mybin --name myfile.extension'
+
+--yes, -y           Always answer 'yes' to all questions without showing prompts.
+    Ex: 'filebiner --yes remove --bin mybin --name myfile.extension'
+"
+}
+
+# set default variables
+YES_TO_ALL="FALSE"
+
+# detect YES_TO_ALL argument input
+case "$1" in
+    -y|--yes) shift; YES_TO_ALL="TRUE";;
+esac
+# detect all other arguments
+case "$1" in
+    up|upload) shift; uploadfile "$@";;
+    ls|list) shift; listfiles "$@";;
+    dl|download) shift; downloadfile "$@";;
+    rm|remove) shift; deletefile "$@";;
+    *) filebinerhelp; exit 0;;
+esac

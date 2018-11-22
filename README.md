@@ -1,6 +1,6 @@
 # yadshot
 
-yadshot uses ImageMagick or ffmpeg and slop to take screenshots.  yadshot can upload screenshots and files to https://teknik.io, and it can also upload pastes to https://paste.rs
+yadshot uses ImageMagick or ffmpeg and slop to take screenshots.  yadshot can upload screenshots, files, and pastes to https://Filebin.net.
 
 Arguments:
 
@@ -11,11 +11,11 @@ Arguments:
 
 --settings, -s      Show screenshot settings before capturing a screenshot.
 
---paste, -p         Upload a paste from your clipboard to paste.rs.  Text may also be piped in from stdin.
-                    Syntax may be specified with '--syntax' or '-s'. Ex:
-                    'cat ./somefile.sh | yadshot -p -s sh'
+--paste, -p         Upload a paste from your clipboard to Filebin.net.  Text may also be piped in from stdin.
 
---file, -f          Open file chooser to upload a file to teknik.io
+--file, -f          Open file chooser to upload a file to Filebin.net
+
+--list, -l          List files uploaded to Filebin.net
 
 --color, -C         Open color picker.  Color will be copied to clipboard if 'Ok' is pressed.
 

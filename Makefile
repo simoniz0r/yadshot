@@ -12,6 +12,7 @@ install:
 		@echo 'Installing yadshot...'
 		@chmod +x yadshot.sh
 		@cp -p yadshot.sh $(DESTDIR)$(PREFIX)/bin/yadshot
+		@cp -p filebiner $(DESTDIR)$(PREFIX)/bin/filebiner
 		@cp -p yadshot.desktop $(DESTDIR)$(PREFIX)/share/applications/yadshot.desktop
 		@cp -p yadshot.svg $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/yadshot.svg
 		@echo 'yadshot installed!'
@@ -19,6 +20,7 @@ install:
 uninstall:
 		@echo 'Removing files...'
 		@rm -f $(DESTDIR)$(PREFIX)/bin/yadshot
+		@rm -f $(DESTDIR)$(PREFIX)/bin/filebiner
 		@rm -f $(DESTDIR)$(PREFIX)/share/applications/yadshot.desktop
 		@rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/64x64/apps/yadshot.png
 		@rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/yadshot.svg
