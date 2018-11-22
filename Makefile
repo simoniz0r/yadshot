@@ -11,6 +11,7 @@ install:
 
 		@echo 'Installing yadshot...'
 		@chmod +x yadshot.sh
+		@chmod +x filebiner
 		@cp -p yadshot.sh $(DESTDIR)$(PREFIX)/bin/yadshot
 		@cp -p filebiner $(DESTDIR)$(PREFIX)/bin/filebiner
 		@cp -p yadshot.desktop $(DESTDIR)$(PREFIX)/share/applications/yadshot.desktop
