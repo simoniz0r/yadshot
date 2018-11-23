@@ -42,6 +42,7 @@ fi
 SS_NAME="yadshot-$(date +'%s').png"
 SELECTION="TRUE"
 DECORATIONS="TRUE"
+COPYONCAP="TRUE"
 SS_DELAY=0
 if type ffmpeg >/dev/null 2>&1; then
     export YSHOT_IMAGE_PLUGIN="ffmpeg"
@@ -154,6 +155,7 @@ export -f yadshottray
 function yadshotsavesettings() {
     echo "SELECTION="\"$SELECTION\""" > ~/.config/yadshot/yadshot.conf
     echo "DECORATIONS="\"$DECORATIONS\""" >> ~/.config/yadshot/yadshot.conf
+    echo "COPYONCAP="\"$COPYONCAP\""" >> ~/.config/yadshot/yadshot.conf
     echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
     echo "YSHOT_IMAGE_PLUGIN="\"$YSHOT_IMAGE_PLUGIN\""" >> ~/.config/yadshot/yadshot.conf
 }
@@ -173,12 +175,13 @@ function yadshotsettings() {
     YSHOT_PLUGIN_LIST="$(echo $YSHOT_PLUGIN_LIST | tr ',' '\n' | grep -vw "$YSHOT_IMAGE_PLUGIN" | sed '/^$/d' | tr '\n' ',')"
     YSHOT_PLUGIN_LIST="$(echo $YSHOT_IMAGE_PLUGIN,$YSHOT_PLUGIN_LIST | rev | cut -f2- -d',' | rev)"
     OUTPUT="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=200 --columns=1 --form --no-escape --item-separator="," --separator="," --borders="10" \
-    --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Delay before capture":NUM "$SS_DELAY!0..120" \
+    --field="Capture selection":CHK "$SELECTION" --field="Capture decorations":CHK "$DECORATIONS" --field="Copy screenshot to clipboard on capture":CHK "$COPYONCAP" --field="Delay before capture":NUM "$SS_DELAY!0..120" \
     --field="Image capture plugin":CB "$YSHOT_PLUGIN_LIST" --button="gtk-ok")"
     SELECTION="$(echo $OUTPUT | cut -f1 -d",")"
     DECORATIONS="$(echo $OUTPUT | cut -f2 -d",")"
-    SS_DELAY="$(echo $OUTPUT | cut -f3 -d",")"
-    YSHOT_IMAGE_PLUGIN="$(echo $OUTPUT | cut -f4 -d",")"
+    COPYONCAP="$(echo $OUTPUT | cut -f3 -d",")"
+    SS_DELAY="$(echo $OUTPUT | cut -f4 -d",")"
+    YSHOT_IMAGE_PLUGIN="$(echo $OUTPUT | cut -f5 -d",")"
     yadshotsavesettings
 }
 export -f yadshotsettings
@@ -187,11 +190,10 @@ function yadshotupload() {
     echo -n "" | xclip -i -selection clipboard
     "$RUNNING_DIR"/filebiner up -f "$1"
     FILE_URL="$(xclip -o -selection clipboard)"
-    echo "$FILE_URL"
     if [[ -z "$FILE_URL" ]]; then
         echo 'error uploading file!\n'
         FAILED=1
-        yad --window-icon="$ICON_PATH" --center --error --title="yadshot" --text="$SS_NAME upload failed; screenshot stored in $HOME/Pictures/$SS_NAME"
+        yad --window-icon="$ICON_PATH" --center --error --title="yadshot" --text="Failed to upload '$1'!"
     else
         FAILED=0
         rm -f "$HOME/Pictures/$SS_NAME"
@@ -295,6 +297,9 @@ function displayss() {
         yad --window-icon="$ICON_PATH" --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to capture screenshot!"
         exit 1
     fi
+    if [ "$COPYONCAP" = "TRUE" ]; then
+        xclip -selection clipboard -t image/png -i < /tmp/"$SS_NAME"
+    fi
     WSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f2 -d" " | awk '{print $1 * .75}' | cut -f1 -d'.')
     HSCREEN_RES=$(xrandr | grep 'current' | cut -f2 -d"," | sed 's:current ::g' | cut -f4 -d" " | awk '{print $1 * .75}' | cut -f1 -d'.')
     WSIZE=$(file /tmp/$SS_NAME | cut -f2 -d"," | cut -f2 -d" " | cut -f1 -d'.')
@@ -373,7 +378,7 @@ function yadshotpastepipe() {
     "$RUNNING_DIR"/filebiner up -f /tmp/yadshotpaste.txt
     PASTE_URL="$(xclip -o -selection clipboard)"
     rm -f /tmp/yadshotpaste.txt
-    if [[ ! "$PASTE_URL" =~ "http" ]]; then
+    if [[ -z "$PASTE_URL" ]]; then
         yad --center --height=150 --borders=20 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
         exit 1
     else
