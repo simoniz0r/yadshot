@@ -68,7 +68,10 @@ if [ ! -d "$HOME/.config/yadshot/plugins" ]; then
     echo "SS_DELAY="\"$SS_DELAY\""" >> ~/.config/yadshot/yadshot.conf
     echo "YSHOT_IMAGE_PLUGIN="\"$YSHOT_IMAGE_PLUGIN\""" >> ~/.config/yadshot/yadshot.conf
 fi
-
+# create ~/Pictures if it does not exist
+if [ ! -d "$HOME/Pictures" ]; then
+    mkdir -p "$HOME"/Pictures
+fi
 # add handler to manage process shutdown
 function on_exit() {
     echo "quit" >&3
@@ -418,7 +421,7 @@ function startfunc() {
 }
 # help function
 function yadshothelp() {
-printf '%s\n' "yadshot v0.2.04
+printf '%s\n' "yadshot v0.2.05
 yadshot provides a GUI frontend for taking screenshots with 
 ImageMagick/slop or ffmpeg/slop. yadshot can upload screenshots,
 files, and pastes to Filebin.net.
