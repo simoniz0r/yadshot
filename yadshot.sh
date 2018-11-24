@@ -14,6 +14,10 @@ else
     export ICON_PATH="gtk-fullscreen"
 fi
 # check for dependencies
+if [ ! -f "$RUNNING_DIR/filebiner" ]; then
+    MISSING_DEPS="TRUE"
+    echo "$(tput setaf 1)filebiner is missing!$(tput sgr0)"
+fi
 if ! type curl >/dev/null 2>&1; then
     MISSING_DEPS="TRUE"
     echo "$(tput setaf 1)curl is not installed!$(tput sgr0)"
