@@ -390,7 +390,7 @@ function yadshotpastepipe() {
 }
 # select a file to upload to Filebin.net
 function yadshotfileselect() {
-    FILE="$(yad --window-icon="$ICON_PATH" --file $PWD --center --title=yadshot --height 600 --width 800)"
+    FILE="$(yad --window-icon="$ICON_PATH" --file $PWD --center --add-preview --title=yadshot --height 600 --width 800)"
     case $? in
         0)
             yadshotupload "$FILE"
