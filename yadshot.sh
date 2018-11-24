@@ -133,8 +133,8 @@ function upload_list() {
             local FILE_NAME="$(echo "$LIST_ITEM" | rev | cut -f2- -d'?' | cut -f1 -d'/' | rev)"
             filebiner -y rm -n "$FILE_NAME"
             case $? in
-                1) yad --window-icon="$ICON_PATH" --borders=20 --center --info --title="yadshot" --button=gtk-ok --text="Failed to remove '$FILE_NAME' from Filebin!";;
-                0) yad --window-icon="$ICON_PATH" --borders=20 --center --info --title="yadshot" --button=gtk-ok --text="'$FILE_NAME' has been removed from Filebin!";;
+                1) echo "Failed to remove '$FILE_NAME' from Filebin!" | yad --window-icon="$ICON_PATH" --borders=20 --center --text-info --wrap --title="yadshot" --button=gtk-ok;;
+                0) echo "'$FILE_NAME' has been removed from Filebin!" | yad --window-icon="$ICON_PATH" --borders=20 --center --text-info --wrap --title="yadshot" --button=gtk-ok;;
             esac
             "$YADSHOT_PATH" -l
             ;;
@@ -200,7 +200,7 @@ function yadshotupload() {
     else
         FAILED=0
         rm -f "$HOME/Pictures/$SS_NAME"
-        yad --window-icon="$ICON_PATH" --center --height=150 --borders=20 --info --selectable-labels --title="yadshot" --button="Back"\!gtk-ok:0 --button="Close"\!gtk-cancel:1 --text="$FILE_URL"
+        echo "$FILE_URL" | yad --window-icon="$ICON_PATH" --center --height=200 --width=300 --borders=20 --text-info --wrap --show-uri --uri-color="yellow" --title="yadshot" --button="Back"\!gtk-ok:0 --button="Close"\!gtk-cancel:1
         case $? in
             1)
                 rm -f /tmp/"$SS_NAME"
@@ -297,7 +297,7 @@ function yadshotcaptureffmpeg() {
 function displayss() {
     . ~/.config/yadshot/yadshot.conf
     if [ ! -f "/tmp/$SS_NAME" ]; then
-        yad --window-icon="$ICON_PATH" --center --height=150 --borders=10 --info --title="yadshot" --button=gtk-ok --text="Failed to capture screenshot!"
+        echo "Failed to capture screenshot!" | yad --window-icon="$ICON_PATH" --center --height=200 --width=300 --borders=10 --text-info --wrap --title="yadshot" --button=gtk-ok
         exit 1
     fi
     if [ "$COPYONCAP" = "TRUE" ]; then
@@ -353,7 +353,7 @@ function buttonpressed() {
 # upload paste from clipboard to Filebin.net with optional syntax
 function yadshotpaste() {
     echo -e "$(xclip -o -selection clipboard)" > /tmp/yadshotpaste.txt
-    PASTE_CONTENT="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=600 --width=800 --text-info --filename="/tmp/yadshotpaste.txt" --editable --borders="10" --button="Cancel"\!gtk-cancel:1 --button="Ok"\!gtk-ok:0)"
+    PASTE_CONTENT="$(yad --window-icon="$ICON_PATH" --center --title="yadshot" --height=600 --width=800 --text-info --wrap --filename="/tmp/yadshotpaste.txt" --editable --borders="10" --button="Cancel"\!gtk-cancel:1 --button="Ok"\!gtk-ok:0)"
     case $? in
         0)
             echo -e "$PASTE_CONTENT" > /tmp/yadshotpaste.txt
@@ -368,10 +368,10 @@ function yadshotpaste() {
     PASTE_URL="$(xclip -o -selection clipboard)"
     rm -f /tmp/yadshotpaste.txt
     if [[ -z "$PASTE_URL" ]]; then
-        yad --window-icon="$ICON_PATH" --center --height=150 --borders=20 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
+        echo "Failed to upload paste!"| yad --window-icon="$ICON_PATH" --center --height=200 --width=300 --borders=20 --text-info --wrap --title="yadshot" --button=gtk-ok
         exit 1
     else
-        yad --window-icon="$ICON_PATH" --center --height=150 --borders=20 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="$PASTE_URL"
+        echo "$PASTE_URL" | yad --window-icon="$ICON_PATH" --center --height=200 --width=300 --borders=20 --text-info --wrap --show-uri --uri-color="yellow" --title="yadshot" --button=gtk-ok
     fi
 }
 # get input from stdin and upload to Filebin.net
@@ -382,10 +382,10 @@ function yadshotpastepipe() {
     PASTE_URL="$(xclip -o -selection clipboard)"
     rm -f /tmp/yadshotpaste.txt
     if [[ -z "$PASTE_URL" ]]; then
-        yad --center --height=150 --borders=20 --info --title="yadshot" --button=gtk-ok --text="Failed to upload paste!"
+        echo "Failed to upload paste!" | yad --center --height=200 --width=300 --borders=20 --text-info --wrap --title="yadshot" --button=gtk-ok
         exit 1
     else
-        yad --center --height=150 --borders=20 --info --selectable-labels --title="yadshot" --button=gtk-ok --text="$PASTE_URL"
+        echo "$PASTE_URL"| yad --center --height=200 --width=300 --borders=20 --text-info --wrap --show-uri --uri-color="yellow" --title="yadshot" --button=gtk-ok
     fi
 }
 # select a file to upload to Filebin.net
